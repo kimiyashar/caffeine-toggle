@@ -2,6 +2,8 @@
 
 A native macOS Control Center toggle that keeps a Mac awake and optionally prevents lid-close sleep.
 
+**Website:** [kimiyashar.github.io/caffeine-toggle](https://kimiyashar.github.io/caffeine-toggle/)
+
 - Empty mug: normal sleep behavior
 - Filled mug: prevents idle sleep and disables clamshell sleep
 - Native WidgetKit Control Center control
