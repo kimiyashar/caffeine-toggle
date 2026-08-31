@@ -10,14 +10,19 @@
   <meta name="theme-color" content="#000000">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://kimiyashar.github.io/caffeine-toggle/">
+  <link rel="icon" href="assets/favicon.svg">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Close the lid. Keep the work running.">
   <meta property="og:description" content="A native macOS Control Center toggle for closed-lid AI jobs, downloads, and terminal work.">
   <meta property="og:url" content="https://kimiyashar.github.io/caffeine-toggle/">
   <meta property="og:site_name" content="Caffeine Toggle">
+  <meta property="og:image" content="https://kimiyashar.github.io/caffeine-toggle/assets/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Caffeine Toggle for macOS">
   <meta name="twitter:description" content="Keep Hermes, Claude, and long-running work alive with your MacBook lid closed.">
+  <meta name="twitter:image" content="https://kimiyashar.github.io/caffeine-toggle/assets/social-card.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -189,6 +194,13 @@
     .safety h2 { margin: 24px 0 0; font-size: clamp(38px, 4.3vw, 58px); line-height: 1.03; letter-spacing: -2.4px; }
     .safety p { margin: 0; font-size: 22px; line-height: 1.45; color: #424245; letter-spacing: -.4px; }
     .safety strong { color: var(--ink); }
+    .guides { padding: 120px 24px; background: #fff; }
+    .guide-grid { max-width: var(--max); margin: 54px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .guide-card { min-height: 270px; padding: 30px; border-radius: 18px; background: var(--soft); text-decoration: none; display: flex; flex-direction: column; justify-content: space-between; transition: transform .18s ease; }
+    .guide-card:hover { transform: translateY(-3px); }
+    .guide-card span { color: var(--muted); font-size: 13px; }
+    .guide-card h3 { margin: 0; font-size: 27px; line-height: 1.12; letter-spacing: -.8px; }
+    .guide-card b { color: var(--link); font-size: 14px; font-weight: 500; }
     .faq { padding: 120px 24px; }
     .faq-grid { max-width: var(--max); margin: 58px auto 0; border-top: 1px solid var(--line); }
     details { border-bottom: 1px solid var(--line); }
@@ -215,6 +227,7 @@
       .step { grid-template-columns: 64px 1fr; }
       .step p { grid-column: 2; }
       .safety-layout { grid-template-columns: 1fr; gap: 46px; }
+      .guide-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
       .nav-links a:not(.github-link) { display: none; }
@@ -330,6 +343,18 @@
       </div>
     </section>
 
+    <section class="guides" aria-labelledby="guides-title">
+      <div class="section">
+        <p class="section-kicker">Practical guides</p>
+        <h2 id="guides-title">Make the Mac stay awake on purpose.</h2>
+      </div>
+      <div class="guide-grid">
+        <a class="guide-card" href="keep-mac-awake-lid-closed/"><span>Closed lid</span><h3>Keep a Mac awake with the lid closed</h3><b>Read the guide ›</b></a>
+        <a class="guide-card" href="caffeinate-mac-command/"><span>Terminal</span><h3>Use the macOS caffeinate command</h3><b>See commands and flags ›</b></a>
+        <a class="guide-card" href="keep-ai-agents-running-mac/"><span>AI agents</span><h3>Keep Claude and Hermes running</h3><b>Use the preflight checklist ›</b></a>
+      </div>
+    </section>
+
     <section class="faq" id="faq">
       <div class="section">
         <p class="section-kicker">Questions, answered</p>
@@ -354,7 +379,7 @@
   <footer>
     <div class="footer-inner">
       <span>© 2026 Kimi Yashar. Caffeine Toggle is an independent open-source project.</span>
-      <div class="footer-links"><a href="https://github.com/kimiyashar/caffeine-toggle">Source</a><a href="https://github.com/kimiyashar/caffeine-toggle/issues">Issues</a><a href="https://github.com/kimiyashar/caffeine-toggle/blob/main/LICENSE">MIT License</a></div>
+      <div class="footer-links"><a href="keep-mac-awake-lid-closed/">Guides</a><a href="https://github.com/kimiyashar/caffeine-toggle">Source</a><a href="https://github.com/kimiyashar/caffeine-toggle/issues">Issues</a><a href="https://github.com/kimiyashar/caffeine-toggle/blob/main/LICENSE">MIT License</a></div>
     </div>
   </footer>
 
