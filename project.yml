@@ -1,0 +1,83 @@
+name: CaffeineToggle
+options:
+  bundleIdPrefix: com.kimiyashar
+  deploymentTarget:
+    macOS: "26.0"
+settings:
+  base:
+    DEVELOPMENT_TEAM: 9NTP754TX2
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+targets:
+  CaffeineToggle:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+        excludes:
+          - "*.entitlements"
+      - path: Shared
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Caffeine Toggle
+        CFBundleShortVersionString: "1.7"
+        CFBundleVersion: "8"
+        LSUIElement: true
+        NSHighResolutionCapable: true
+    entitlements:
+      path: App/CaffeineToggle.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kimiyashar.CaffeineToggle
+        PRODUCT_NAME: Caffeine Toggle
+        EXECUTABLE_NAME: CaffeineToggle
+        CODE_SIGN_ENTITLEMENTS: App/CaffeineToggle.entitlements
+    dependencies:
+      - target: CaffeineControls
+        embed: true
+      - sdk: IOKit.framework
+  CaffeineControls:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Control
+        excludes:
+          - Info.plist
+          - "*.entitlements"
+      - path: Shared
+    info:
+      path: Control/Info.plist
+      properties:
+        CFBundleDisplayName: Caffeine Controls
+        CFBundleShortVersionString: "1.7"
+        CFBundleVersion: "8"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Control/CaffeineControls.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kimiyashar.CaffeineToggle.Controls
+        PRODUCT_NAME: CaffeineControls
+        CODE_SIGN_ENTITLEMENTS: Control/CaffeineControls.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+  CaffeineToggleTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+      - path: Shared
+      - path: App/ClamshellController.swift
+    dependencies:
+      - sdk: IOKit.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kimiyashar.CaffeineToggle.Tests
+        CODE_SIGNING_ALLOWED: NO

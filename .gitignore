@@ -1,0 +1,10 @@
+.DS_Store
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.derived/
+.derived-*/
+build/
+evidence/
+spikes/
+*.log
