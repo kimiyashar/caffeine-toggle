@@ -7,19 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000EADA93A596A887705ADB4 /* CaffeineDoubleClickTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F44145DE4E0D558F689237B /* CaffeineDoubleClickTests.swift */; };
 		04B579BFF154C81F712AE4FF /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97C382C21FF15F00D7ECCCC2 /* main.swift */; };
 		09F8F53DA9706D28113C8B09 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
 		0C122DE89EF49D8D6D5076E4 /* ClamshellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3808965F3F205D3A451868 /* ClamshellController.swift */; };
+		139B62460DA64F93E85BA750 /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
+		2A8995511B948DEBD82F399A /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
 		2C623CC22915B4088A223F26 /* ClamshellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3808965F3F205D3A451868 /* ClamshellController.swift */; };
+		2DA165F94D00636900DAFCAA /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
 		2F6711470E2407AA9CA54D95 /* CaffeineAppearanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF724271A2946C70015EED0E /* CaffeineAppearanceTests.swift */; };
+		2F807B9E964BE31AF393FD02 /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
 		315FB7E8D277E380609BE19B /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
+		31B29C32A33EAA7991DB9975 /* CaffeineScheduleStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */; };
+		3535E295BCE9D6578B45DC53 /* CaffeineDoubleClick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BDD0353909B4408D207F95 /* CaffeineDoubleClick.swift */; };
+		37A400A544441F79613C1D36 /* ScheduleSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */; };
+		3CB3A55B4E4E4F95A19D835A /* CaffeineDoubleClick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BDD0353909B4408D207F95 /* CaffeineDoubleClick.swift */; };
 		46534EFE9D9F7816DE201D76 /* CaffeineControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A5D52F34AE02FC907445172A /* CaffeineControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		49679DF9D1601AC6BD6171D6 /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
 		5A530F8039AA5B4E795E78A4 /* CaffeineCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */; };
+		5D4356C1BCEA4C87C6E66CDC /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
+		6575DD88A2208DAECBB15B14 /* SingleInstanceLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */; };
 		70660F187B23AC4A2CB6A02A /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
 		70EB916019E5C2A25E72D5F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A7905CB8C59F068C01F0B8 /* IOKit.framework */; };
 		71A23A0DC3438A6A1163DC9E /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
+		71B383004E63078BD1C243C6 /* SingleInstanceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */; };
+		80466D0FF752CCA9A32BE9A3 /* CaffeineRestartPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F874826D53C0F38FF152EC /* CaffeineRestartPolicyTests.swift */; };
+		8725F07C9E54A885C4DD33F0 /* CaffeinateArgumentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36EA9FCEB45677E011CA146 /* CaffeinateArgumentsTests.swift */; };
+		8CB253DD21F367025BA5BAE1 /* CaffeineScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */; };
+		8FE0463DC0DDB932EEC351B4 /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
 		95746112A20AC6679E36C5F1 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
+		AE256491CAA6FCA3C756B538 /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
+		B201DCFC69B289FCD78941AE /* SingleInstanceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */; };
+		B6AB5F942194FB079932A319 /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
 		CC18F3C7DC422829E476C8AC /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A7905CB8C59F068C01F0B8 /* IOKit.framework */; };
+		CF8E252A8FE2414FC9CEFBB8 /* ScheduleSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */; };
+		D045B1F339D191785F027E27 /* CaffeineDoubleClick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BDD0353909B4408D207F95 /* CaffeineDoubleClick.swift */; };
+		EB5C6DDEE75FFC42B333A229 /* ScheduleSettingsModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */; };
 		ED234D238AB3F766FE4B3ADD /* ClamshellControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */; };
 		FC3790012C375047DFF7C3C3 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
 		FE8EC3B483A69ABD084DCC96 /* CaffeineControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59CF3B2410F1DDD1BD2E0651 /* CaffeineControl.swift */; };
@@ -50,18 +73,31 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSettingsModelTests.swift; sourceTree = "<group>"; };
+		047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstanceLock.swift; sourceTree = "<group>"; };
 		2312AB5BD5A4657BF26FF3D6 /* CaffeineToggleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CaffeineToggleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineScheduleTests.swift; sourceTree = "<group>"; };
+		3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineRestartPolicy.swift; sourceTree = "<group>"; };
+		407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineScheduleStoreTests.swift; sourceTree = "<group>"; };
+		4F44145DE4E0D558F689237B /* CaffeineDoubleClickTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineDoubleClickTests.swift; sourceTree = "<group>"; };
 		59CF3B2410F1DDD1BD2E0651 /* CaffeineControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineControl.swift; sourceTree = "<group>"; };
 		68A7905CB8C59F068C01F0B8 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineCommandTests.swift; sourceTree = "<group>"; };
+		83BDD0353909B4408D207F95 /* CaffeineDoubleClick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineDoubleClick.swift; sourceTree = "<group>"; };
 		92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClamshellControllerTests.swift; sourceTree = "<group>"; };
 		97C382C21FF15F00D7ECCCC2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		9E6BFCF946294CFA6143D652 /* CaffeineToggle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CaffeineToggle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5D52F34AE02FC907445172A /* CaffeineControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CaffeineControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineAppearance.swift; sourceTree = "<group>"; };
+		C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSettings.swift; sourceTree = "<group>"; };
 		CF3808965F3F205D3A451868 /* ClamshellController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClamshellController.swift; sourceTree = "<group>"; };
 		CF724271A2946C70015EED0E /* CaffeineAppearanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineAppearanceTests.swift; sourceTree = "<group>"; };
+		D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstanceLockTests.swift; sourceTree = "<group>"; };
+		D5F874826D53C0F38FF152EC /* CaffeineRestartPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineRestartPolicyTests.swift; sourceTree = "<group>"; };
+		DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateArguments.swift; sourceTree = "<group>"; };
+		E36EA9FCEB45677E011CA146 /* CaffeinateArgumentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateArgumentsTests.swift; sourceTree = "<group>"; };
 		E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineCommand.swift; sourceTree = "<group>"; };
+		EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineSchedule.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +125,8 @@
 			children = (
 				CF3808965F3F205D3A451868 /* ClamshellController.swift */,
 				97C382C21FF15F00D7ECCCC2 /* main.swift */,
+				C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */,
+				047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -96,9 +134,16 @@
 		590CF2886E3043F891C4FB93 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E36EA9FCEB45677E011CA146 /* CaffeinateArgumentsTests.swift */,
 				CF724271A2946C70015EED0E /* CaffeineAppearanceTests.swift */,
 				7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */,
+				4F44145DE4E0D558F689237B /* CaffeineDoubleClickTests.swift */,
+				D5F874826D53C0F38FF152EC /* CaffeineRestartPolicyTests.swift */,
+				407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */,
+				2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */,
 				92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */,
+				0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */,
+				D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -118,8 +163,12 @@
 		DCE90FD0D1B7797604327167 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */,
 				C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */,
 				E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */,
+				83BDD0353909B4408D207F95 /* CaffeineDoubleClick.swift */,
+				3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */,
+				EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -257,9 +306,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49679DF9D1601AC6BD6171D6 /* CaffeinateArguments.swift in Sources */,
 				71A23A0DC3438A6A1163DC9E /* CaffeineAppearance.swift in Sources */,
 				09F8F53DA9706D28113C8B09 /* CaffeineCommand.swift in Sources */,
 				FE8EC3B483A69ABD084DCC96 /* CaffeineControl.swift in Sources */,
+				D045B1F339D191785F027E27 /* CaffeineDoubleClick.swift in Sources */,
+				AE256491CAA6FCA3C756B538 /* CaffeineRestartPolicy.swift in Sources */,
+				5D4356C1BCEA4C87C6E66CDC /* CaffeineSchedule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,12 +320,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FE0463DC0DDB932EEC351B4 /* CaffeinateArguments.swift in Sources */,
+				8725F07C9E54A885C4DD33F0 /* CaffeinateArgumentsTests.swift in Sources */,
 				70660F187B23AC4A2CB6A02A /* CaffeineAppearance.swift in Sources */,
 				2F6711470E2407AA9CA54D95 /* CaffeineAppearanceTests.swift in Sources */,
 				FC3790012C375047DFF7C3C3 /* CaffeineCommand.swift in Sources */,
 				5A530F8039AA5B4E795E78A4 /* CaffeineCommandTests.swift in Sources */,
+				3CB3A55B4E4E4F95A19D835A /* CaffeineDoubleClick.swift in Sources */,
+				000EADA93A596A887705ADB4 /* CaffeineDoubleClickTests.swift in Sources */,
+				2A8995511B948DEBD82F399A /* CaffeineRestartPolicy.swift in Sources */,
+				80466D0FF752CCA9A32BE9A3 /* CaffeineRestartPolicyTests.swift in Sources */,
+				2F807B9E964BE31AF393FD02 /* CaffeineSchedule.swift in Sources */,
+				31B29C32A33EAA7991DB9975 /* CaffeineScheduleStoreTests.swift in Sources */,
+				8CB253DD21F367025BA5BAE1 /* CaffeineScheduleTests.swift in Sources */,
 				2C623CC22915B4088A223F26 /* ClamshellController.swift in Sources */,
 				ED234D238AB3F766FE4B3ADD /* ClamshellControllerTests.swift in Sources */,
+				37A400A544441F79613C1D36 /* ScheduleSettings.swift in Sources */,
+				EB5C6DDEE75FFC42B333A229 /* ScheduleSettingsModelTests.swift in Sources */,
+				71B383004E63078BD1C243C6 /* SingleInstanceLock.swift in Sources */,
+				6575DD88A2208DAECBB15B14 /* SingleInstanceLockTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,9 +346,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DA165F94D00636900DAFCAA /* CaffeinateArguments.swift in Sources */,
 				315FB7E8D277E380609BE19B /* CaffeineAppearance.swift in Sources */,
 				95746112A20AC6679E36C5F1 /* CaffeineCommand.swift in Sources */,
+				3535E295BCE9D6578B45DC53 /* CaffeineDoubleClick.swift in Sources */,
+				B6AB5F942194FB079932A319 /* CaffeineRestartPolicy.swift in Sources */,
+				139B62460DA64F93E85BA750 /* CaffeineSchedule.swift in Sources */,
 				0C122DE89EF49D8D6D5076E4 /* ClamshellController.swift in Sources */,
+				CF8E252A8FE2414FC9CEFBB8 /* ScheduleSettings.swift in Sources */,
+				B201DCFC69B289FCD78941AE /* SingleInstanceLock.swift in Sources */,
 				04B579BFF154C81F712AE4FF /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
