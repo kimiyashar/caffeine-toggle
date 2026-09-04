@@ -24,8 +24,8 @@ targets:
       path: Info.plist
       properties:
         CFBundleDisplayName: Caffeine Toggle
-        CFBundleShortVersionString: "2.0"
-        CFBundleVersion: "11"
+        CFBundleShortVersionString: "2.1"
+        CFBundleVersion: "12"
         LSUIElement: true
         NSHighResolutionCapable: true
     entitlements:
@@ -53,8 +53,8 @@ targets:
       path: Control/Info.plist
       properties:
         CFBundleDisplayName: Caffeine Controls
-        CFBundleShortVersionString: "2.0"
-        CFBundleVersion: "11"
+        CFBundleShortVersionString: "2.1"
+        CFBundleVersion: "12"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:

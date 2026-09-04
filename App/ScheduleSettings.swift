@@ -19,12 +19,42 @@ enum ScheduleRepeatPreset: String, CaseIterable, Identifiable {
     }
 }
 
+enum CalendarRepeatChoice: String, CaseIterable, Identifiable {
+    case never = "Never"
+    case everyDay = "Every Day"
+    case everyWeek = "Every Week"
+    case everyMonth = "Every Month"
+    case everyYear = "Every Year"
+    case custom = "Custom…"
+
+    var id: String { rawValue }
+}
+
+enum RecurrenceEndChoice: String, CaseIterable, Identifiable {
+    case never = "Never"
+    case onDate = "On"
+    case afterOccurrences = "After"
+
+    var id: String { rawValue }
+}
+
 @MainActor
 final class ScheduleSettingsModel: ObservableObject {
     @Published var enabled: Bool
     @Published var onTime: Date
     @Published var offTime: Date
     @Published var weekdays: Set<Int>
+    @Published var repeatChoice: CalendarRepeatChoice {
+        didSet {
+            enabled = repeatChoice != .never
+            if oldValue != repeatChoice { recurrenceAnchorDate = now() }
+        }
+    }
+    @Published var customFrequency: CaffeineRecurrenceFrequency
+    @Published var customInterval: Int
+    @Published var recurrenceEnd: RecurrenceEndChoice
+    @Published var recurrenceEndDate: Date
+    @Published var recurrenceCount: Int
     @Published var sessionMinutes = 120
     @Published var sessionEndDate: Date?
     @Published var message: String?
@@ -32,6 +62,7 @@ final class ScheduleSettingsModel: ObservableObject {
     private let store: CaffeineScheduleStore
     private let calendarProvider: () -> Calendar
     private let now: () -> Date
+    private var recurrenceAnchorDate: Date
 
     init(
         store: CaffeineScheduleStore = CaffeineScheduleStore(),
@@ -47,6 +78,14 @@ final class ScheduleSettingsModel: ObservableObject {
         onTime = Self.date(for: schedule.onMinutes, calendar: calendar)
         offTime = Self.date(for: schedule.offMinutes, calendar: calendar)
         weekdays = schedule.weekdays
+        repeatChoice = Self.choice(for: schedule, calendar: calendar)
+        recurrenceAnchorDate = schedule.recurrence?.localAnchorDate(in: calendar) ?? now()
+        customFrequency = schedule.recurrence?.frequency ?? .weekly
+        customInterval = schedule.recurrence?.interval ?? 1
+        recurrenceEnd = schedule.recurrence?.endDate != nil ? .onDate
+            : schedule.recurrence?.occurrenceLimit != nil ? .afterOccurrences : .never
+        recurrenceEndDate = schedule.recurrence?.localEndDate(in: calendar) ?? now().addingTimeInterval(30 * 24 * 60 * 60)
+        recurrenceCount = schedule.recurrence?.occurrenceLimit ?? 10
         let savedEndDate = store.sessionEndDate
         sessionEndDate = savedEndDate.flatMap { $0 > now() ? $0 : nil }
         if savedEndDate != nil, sessionEndDate == nil {
@@ -102,13 +141,44 @@ final class ScheduleSettingsModel: ObservableObject {
         message = nil
     }
 
+    func prepareCustomRecurrence() {
+        guard repeatChoice != .custom else { return }
+        let calendar = calendarProvider()
+        switch repeatChoice {
+        case .never:
+            customFrequency = .weekly
+            weekdays = [calendar.component(.weekday, from: recurrenceAnchorDate)]
+        case .everyDay:
+            customFrequency = .daily
+        case .everyWeek:
+            customFrequency = .weekly
+            weekdays = [calendar.component(.weekday, from: recurrenceAnchorDate)]
+        case .everyMonth:
+            customFrequency = .monthly
+        case .everyYear:
+            customFrequency = .yearly
+        case .custom:
+            return
+        }
+        customInterval = 1
+        recurrenceEnd = .never
+    }
+
     func save() {
         let calendar = calendarProvider()
         let onMinutes = Self.minutes(for: onTime, calendar: calendar)
         let offMinutes = Self.minutes(for: offTime, calendar: calendar)
-        if enabled {
-            guard !weekdays.isEmpty else {
+        let scheduleEnabled = enabled && repeatChoice != .never
+        if scheduleEnabled {
+            if repeatChoice == .custom, customFrequency == .weekly, weekdays.isEmpty {
                 message = "Choose at least one day."
+                NSSound.beep()
+                return
+            }
+            if repeatChoice == .custom,
+               recurrenceEnd == .onDate,
+               calendar.startOfDay(for: recurrenceEndDate) < calendar.startOfDay(for: recurrenceAnchorDate) {
+                message = "Choose an end date on or after the schedule starts."
                 NSSound.beep()
                 return
             }
@@ -120,13 +190,15 @@ final class ScheduleSettingsModel: ObservableObject {
         }
 
         store.save(CaffeineSchedule(
-            enabled: enabled,
+            enabled: scheduleEnabled,
             onMinutes: onMinutes,
             offMinutes: offMinutes,
-            weekdays: weekdays
+            weekdays: weekdays,
+            recurrence: recurrenceForSave(calendar: calendar)
         ))
+        enabled = scheduleEnabled
         post(CaffeineCommand.scheduleChangedNotification)
-        message = enabled ? "Schedule saved. The next scheduled time will take over automatically." : "Schedule disabled. Manual toggle control restored."
+        message = scheduleEnabled ? "Schedule saved. The next scheduled time will take over automatically." : "Schedule disabled. Manual toggle control restored."
     }
 
     func reload() {
@@ -136,6 +208,14 @@ final class ScheduleSettingsModel: ObservableObject {
         onTime = Self.date(for: schedule.onMinutes, calendar: calendar)
         offTime = Self.date(for: schedule.offMinutes, calendar: calendar)
         weekdays = schedule.weekdays
+        repeatChoice = Self.choice(for: schedule, calendar: calendar)
+        recurrenceAnchorDate = schedule.recurrence?.localAnchorDate(in: calendar) ?? now()
+        customFrequency = schedule.recurrence?.frequency ?? .weekly
+        customInterval = schedule.recurrence?.interval ?? 1
+        recurrenceEnd = schedule.recurrence?.endDate != nil ? .onDate
+            : schedule.recurrence?.occurrenceLimit != nil ? .afterOccurrences : .never
+        recurrenceEndDate = schedule.recurrence?.localEndDate(in: calendar) ?? now().addingTimeInterval(30 * 24 * 60 * 60)
+        recurrenceCount = schedule.recurrence?.occurrenceLimit ?? 10
         let savedEndDate = store.sessionEndDate
         sessionEndDate = savedEndDate.flatMap { $0 > now() ? $0 : nil }
         if savedEndDate != nil, sessionEndDate == nil {
@@ -160,6 +240,53 @@ final class ScheduleSettingsModel: ObservableObject {
         if days == Set([1, 7]) { return "Weekends" }
         let symbols = Calendar.current.shortWeekdaySymbols
         return days.sorted().map { symbols[$0 - 1] }.joined(separator: ", ")
+    }
+
+    private static func choice(for schedule: CaffeineSchedule, calendar: Calendar) -> CalendarRepeatChoice {
+        guard schedule.enabled else { return .never }
+        guard let recurrence = schedule.recurrence else { return .custom }
+        guard recurrence.interval == 1, recurrence.endDate == nil, recurrence.occurrenceLimit == nil else {
+            return .custom
+        }
+        switch recurrence.frequency {
+        case .daily: return .everyDay
+        case .weekly:
+            let anchorWeekday = calendar.component(.weekday, from: recurrence.localAnchorDate(in: calendar))
+            let selectedDays = recurrence.weekdays.isEmpty ? Set([anchorWeekday]) : recurrence.weekdays
+            return selectedDays == Set([anchorWeekday]) ? .everyWeek : .custom
+        case .monthly: return .everyMonth
+        case .yearly: return .everyYear
+        }
+    }
+
+    private func recurrenceForSave(calendar: Calendar) -> CaffeineRecurrence? {
+        let anchor = recurrenceAnchorDate
+        switch repeatChoice {
+        case .never: return nil
+        case .everyDay:
+            return CaffeineRecurrence(frequency: .daily, anchorDate: anchor, calendar: calendar)
+        case .everyWeek:
+            return CaffeineRecurrence(
+                frequency: .weekly,
+                anchorDate: anchor,
+                weekdays: [calendar.component(.weekday, from: anchor)],
+                calendar: calendar
+            )
+        case .everyMonth:
+            return CaffeineRecurrence(frequency: .monthly, anchorDate: anchor, calendar: calendar)
+        case .everyYear:
+            return CaffeineRecurrence(frequency: .yearly, anchorDate: anchor, calendar: calendar)
+        case .custom:
+            return CaffeineRecurrence(
+                frequency: customFrequency,
+                interval: customInterval,
+                anchorDate: anchor,
+                weekdays: weekdays,
+                endDate: recurrenceEnd == .onDate ? recurrenceEndDate : nil,
+                occurrenceLimit: recurrenceEnd == .afterOccurrences ? recurrenceCount : nil,
+                calendar: calendar
+            )
+        }
     }
 
     private static func date(for minutes: Int, calendar: Calendar) -> Date {
@@ -190,10 +317,12 @@ enum CaffeineEditorSection: String, CaseIterable, Identifiable {
 struct ScheduleSettingsView: View {
     @ObservedObject var model: ScheduleSettingsModel
     @State private var section: CaffeineEditorSection
+    @State private var showsCustomRepeat = false
 
-    init(model: ScheduleSettingsModel) {
+    init(model: ScheduleSettingsModel, showsCustomRepeat: Bool = false) {
         self.model = model
         _section = State(initialValue: model.enabled && model.sessionEndDate == nil ? .repeating : .timer)
+        _showsCustomRepeat = State(initialValue: showsCustomRepeat)
     }
 
     var body: some View {
@@ -227,6 +356,27 @@ struct ScheduleSettingsView: View {
         }
         .padding(24)
         .frame(width: 470, height: 560, alignment: .top)
+        .sheet(isPresented: $showsCustomRepeat) {
+            CustomRepeatView(
+                frequency: model.customFrequency,
+                interval: model.customInterval,
+                weekdays: model.weekdays,
+                endChoice: model.recurrenceEnd,
+                endDate: model.recurrenceEndDate,
+                occurrenceCount: model.recurrenceCount,
+                onCancel: { showsCustomRepeat = false },
+                onSave: { frequency, interval, weekdays, endChoice, endDate, count in
+                    model.customFrequency = frequency
+                    model.customInterval = interval
+                    model.weekdays = weekdays
+                    model.recurrenceEnd = endChoice
+                    model.recurrenceEndDate = endDate
+                    model.recurrenceCount = count
+                    model.repeatChoice = .custom
+                    showsCustomRepeat = false
+                }
+            )
+        }
     }
 
     private var timerView: some View {
@@ -305,68 +455,56 @@ struct ScheduleSettingsView: View {
     }
 
     private var repeatView: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Toggle("Use a repeating schedule", isOn: $model.enabled)
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Schedule Caffeine")
                 .font(.headline)
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Repeat")
-                    .font(.subheadline.weight(.medium))
-                Picker("Repeat", selection: Binding(
-                    get: { model.repeatPreset },
-                    set: { model.repeatPreset = $0 }
-                )) {
-                    ForEach(ScheduleRepeatPreset.allCases) { preset in
-                        Text(preset.rawValue).tag(preset)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .disabled(!model.enabled)
-
-                HStack(spacing: 9) {
-                    ForEach(Array(Calendar.current.veryShortWeekdaySymbols.enumerated()), id: \.offset) { index, symbol in
-                        let weekday = index + 1
-                        Button {
-                            model.toggleDay(weekday)
-                        } label: {
-                            Text(symbol)
-                                .font(.caption.weight(.semibold))
-                                .frame(width: 34, height: 30)
-                                .background(
-                                    model.weekdays.contains(weekday) ? Color.brown : Color.secondary.opacity(0.12),
-                                    in: Capsule()
-                                )
-                                .foregroundStyle(model.weekdays.contains(weekday) ? .white : .secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!model.enabled)
-                        .accessibilityLabel(Calendar.current.weekdaySymbols[index])
-                        .accessibilityValue(model.weekdays.contains(weekday) ? "selected" : "not selected")
-                    }
-                }
-            }
-
-            Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 14) {
+            Grid(alignment: .trailing, horizontalSpacing: 16, verticalSpacing: 14) {
                 GridRow {
-                    Label("Turn on", systemImage: "sunrise.fill")
+                    Text("Turn on:")
                     DatePicker("Turn on", selection: $model.onTime, displayedComponents: .hourAndMinute)
                         .labelsHidden()
-                        .disabled(!model.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 GridRow {
-                    Label("Turn off", systemImage: "moon.zzz.fill")
+                    Text("Turn off:")
                     DatePicker("Turn off", selection: $model.offTime, displayedComponents: .hourAndMinute)
                         .labelsHidden()
-                        .disabled(!model.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                GridRow {
+                    Text("Repeat:")
+                    Picker("Repeat", selection: Binding(
+                        get: { model.repeatChoice },
+                        set: { choice in
+                            if choice == .custom {
+                                model.prepareCustomRecurrence()
+                                showsCustomRepeat = true
+                            } else {
+                                model.repeatChoice = choice
+                            }
+                        }
+                    )) {
+                        ForEach(CalendarRepeatChoice.allCases) { choice in
+                            Text(choice.rawValue).tag(choice)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(width: 190, alignment: .leading)
                 }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
 
-            Text(model.scheduleSummary)
+            Divider()
+
+            Text(repeatSummary)
                 .font(.callout)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
-            Text("Single-click the mug to toggle anytime. The next scheduled boundary takes over; overnight schedules are supported.")
+            Text("Like Calendar, Custom… lets you choose frequency, interval, weekdays, and when the recurrence ends.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -385,6 +523,171 @@ struct ScheduleSettingsView: View {
                 Button("Save Repeat") { model.save() }
                     .keyboardShortcut(.defaultAction)
             }
+        }
+    }
+
+    private var repeatSummary: String {
+        if model.repeatChoice == .never { return "No repeating schedule. The mug stays fully manual." }
+        let on = model.onTime.formatted(date: .omitted, time: .shortened)
+        let off = model.offTime.formatted(date: .omitted, time: .shortened)
+        return "Caffeine turns on at \(on) and off at \(off). Overnight schedules are supported."
+    }
+}
+
+private struct CustomRepeatView: View {
+    @State private var frequency: CaffeineRecurrenceFrequency
+    @State private var interval: Int
+    @State private var weekdays: Set<Int>
+    @State private var endChoice: RecurrenceEndChoice
+    @State private var endDate: Date
+    @State private var occurrenceCount: Int
+
+    let onCancel: () -> Void
+    let onSave: (CaffeineRecurrenceFrequency, Int, Set<Int>, RecurrenceEndChoice, Date, Int) -> Void
+
+    init(
+        frequency: CaffeineRecurrenceFrequency,
+        interval: Int,
+        weekdays: Set<Int>,
+        endChoice: RecurrenceEndChoice,
+        endDate: Date,
+        occurrenceCount: Int,
+        onCancel: @escaping () -> Void,
+        onSave: @escaping (CaffeineRecurrenceFrequency, Int, Set<Int>, RecurrenceEndChoice, Date, Int) -> Void
+    ) {
+        _frequency = State(initialValue: frequency)
+        _interval = State(initialValue: interval)
+        _weekdays = State(initialValue: weekdays)
+        _endChoice = State(initialValue: endChoice)
+        _endDate = State(initialValue: endDate)
+        _occurrenceCount = State(initialValue: occurrenceCount)
+        self.onCancel = onCancel
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            Grid(alignment: .trailing, horizontalSpacing: 14, verticalSpacing: 14) {
+                GridRow {
+                    Text("Frequency:")
+                    Picker("Frequency", selection: $frequency) {
+                        Text("Daily").tag(CaffeineRecurrenceFrequency.daily)
+                        Text("Weekly").tag(CaffeineRecurrenceFrequency.weekly)
+                        Text("Monthly").tag(CaffeineRecurrenceFrequency.monthly)
+                        Text("Yearly").tag(CaffeineRecurrenceFrequency.yearly)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(width: 170)
+                }
+
+                GridRow {
+                    Text("Every:")
+                    HStack(spacing: 8) {
+                        TextField("Interval", value: $interval, format: .number)
+                            .frame(width: 44)
+                            .multilineTextAlignment(.trailing)
+                        Stepper("", value: $interval, in: 1...99)
+                            .labelsHidden()
+                        Text(intervalUnit)
+                            .frame(width: 92, alignment: .leading)
+                    }
+                }
+            }
+
+            if frequency == .weekly {
+                weekdayButtons
+                    .frame(maxWidth: .infinity)
+            }
+
+            Divider()
+
+            HStack(alignment: .top, spacing: 16) {
+                Text("End:")
+                    .frame(width: 72, alignment: .trailing)
+                VStack(alignment: .leading, spacing: 12) {
+                    endRow(.never) { EmptyView() }
+                    endRow(.onDate) {
+                        DatePicker("End date", selection: $endDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .disabled(endChoice != .onDate)
+                    }
+                    endRow(.afterOccurrences) {
+                        HStack(spacing: 8) {
+                            TextField("Count", value: $occurrenceCount, format: .number)
+                                .frame(width: 44)
+                                .multilineTextAlignment(.trailing)
+                            Stepper("", value: $occurrenceCount, in: 1...999)
+                                .labelsHidden()
+                            Text("occurrences")
+                        }
+                        .disabled(endChoice != .afterOccurrences)
+                    }
+                }
+            }
+
+            HStack {
+                Spacer()
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button("OK") {
+                    onSave(frequency, interval, weekdays, endChoice, endDate, occurrenceCount)
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(frequency == .weekly && weekdays.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 470)
+    }
+
+    private var weekdayButtons: some View {
+        HStack(spacing: 11) {
+            ForEach(Array(Calendar.current.veryShortWeekdaySymbols.enumerated()), id: \.offset) { index, symbol in
+                let weekday = index + 1
+                Button {
+                    if weekdays.contains(weekday) {
+                        weekdays.remove(weekday)
+                    } else {
+                        weekdays.insert(weekday)
+                    }
+                } label: {
+                    Text(symbol)
+                        .font(.callout)
+                        .frame(width: 30, height: 30)
+                        .background(weekdays.contains(weekday) ? Color.accentColor : Color.secondary.opacity(0.13), in: Circle())
+                        .foregroundStyle(weekdays.contains(weekday) ? .white : .primary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Calendar.current.weekdaySymbols[index])
+            }
+        }
+    }
+
+    private var intervalUnit: String {
+        let plural = interval == 1 ? "" : "s"
+        switch frequency {
+        case .daily: return "day\(plural)"
+        case .weekly: return "week\(plural)"
+        case .monthly: return "month\(plural)"
+        case .yearly: return "year\(plural)"
+        }
+    }
+
+    private func endRow<Content: View>(
+        _ choice: RecurrenceEndChoice,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 8) {
+            Button {
+                endChoice = choice
+            } label: {
+                Image(systemName: endChoice == choice ? "largecircle.fill.circle" : "circle")
+            }
+            .buttonStyle(.plain)
+            Text(choice.rawValue)
+                .frame(width: 42, alignment: .leading)
+            content()
         }
     }
 }

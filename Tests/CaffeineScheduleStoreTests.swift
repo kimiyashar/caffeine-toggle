@@ -70,4 +70,42 @@ final class CaffeineScheduleStoreTests: XCTestCase {
         store.sessionEndDate = nil
         XCTAssertNil(store.sessionEndDate)
     }
+
+    func testRoundTripsAdvancedRecurrence() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let recurrence = CaffeineRecurrence(
+            frequency: .weekly,
+            interval: 3,
+            anchorDate: Date(timeIntervalSinceReferenceDate: 123_000),
+            weekdays: [2, 4, 6],
+            endDate: Date(timeIntervalSinceReferenceDate: 999_000),
+            occurrenceLimit: 12
+        )
+        let expected = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 8 * 60,
+            offMinutes: 18 * 60,
+            recurrence: recurrence
+        )
+
+        store.save(expected)
+
+        XCTAssertEqual(store.load(), expected)
+    }
+
+    func testDecodedRecurrenceNormalizesUntrustedPersistedValues() throws {
+        let data = Data(#"{"frequency":"weekly","interval":0,"anchorDate":1000,"weekdays":[0,2,9],"endDate":0,"occurrenceLimit":0}"#.utf8)
+
+        let recurrence = try JSONDecoder().decode(CaffeineRecurrence.self, from: data)
+
+        XCTAssertEqual(recurrence.interval, 1)
+        XCTAssertEqual(recurrence.weekdays, [2])
+        XCTAssertEqual(recurrence.occurrenceLimit, 1)
+        XCTAssertEqual(recurrence.endDate, recurrence.anchorDate)
+
+        let oversizedData = Data(#"{"frequency":"daily","interval":9223372036854775807,"anchorDate":0,"weekdays":[],"occurrenceLimit":9223372036854775807}"#.utf8)
+        let oversized = try JSONDecoder().decode(CaffeineRecurrence.self, from: oversizedData)
+        XCTAssertEqual(oversized.interval, 99)
+        XCTAssertEqual(oversized.occurrenceLimit, 999)
+    }
 }

@@ -91,4 +91,137 @@ final class ScheduleSettingsModelTests: XCTestCase {
         XCTAssertEqual(activeCalendar.component(.hour, from: model.onTime), 9)
         XCTAssertEqual(activeCalendar.component(.hour, from: model.offTime), 17)
     }
+
+    func testCalendarRepeatChoiceSavesYearlyRecurrence() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let model = ScheduleSettingsModel(store: store, now: { now })
+
+        model.repeatChoice = .everyYear
+        model.save()
+
+        let schedule = store.load()
+        XCTAssertTrue(schedule.enabled)
+        XCTAssertEqual(schedule.recurrence?.frequency, .yearly)
+        XCTAssertEqual(schedule.recurrence?.interval, 1)
+        XCTAssertEqual(schedule.recurrence?.anchorDate, now)
+    }
+
+    func testCustomCalendarRecurrenceSavesFrequencyIntervalDaysAndEnding() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let endDate = now.addingTimeInterval(30 * 24 * 60 * 60)
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let model = ScheduleSettingsModel(store: store, now: { now })
+
+        model.repeatChoice = .custom
+        model.customFrequency = .weekly
+        model.customInterval = 2
+        model.weekdays = [2, 4, 6]
+        model.recurrenceEnd = .onDate
+        model.recurrenceEndDate = endDate
+        model.save()
+
+        let recurrence = store.load().recurrence
+        XCTAssertEqual(recurrence?.frequency, .weekly)
+        XCTAssertEqual(recurrence?.interval, 2)
+        XCTAssertEqual(recurrence?.weekdays, [2, 4, 6])
+        XCTAssertEqual(recurrence?.endDate, endDate)
+        XCTAssertNil(recurrence?.occurrenceLimit)
+    }
+
+    func testSavingExistingRecurrencePreservesItsAnchorDate() {
+        let originalAnchor = Date(timeIntervalSinceReferenceDate: 100_000)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = CaffeineScheduleStore(defaults: defaults)
+        store.save(CaffeineSchedule(
+            enabled: true,
+            recurrence: CaffeineRecurrence(frequency: .monthly, anchorDate: originalAnchor)
+        ))
+        let model = ScheduleSettingsModel(
+            store: store,
+            calendarProvider: { calendar },
+            now: { Date(timeIntervalSinceReferenceDate: 900_000) }
+        )
+
+        model.save()
+
+        XCTAssertEqual(
+            store.load().recurrence?.localAnchorDate(in: calendar),
+            calendar.startOfDay(for: originalAnchor)
+        )
+    }
+
+    func testCustomNonWeeklyRecurrenceDoesNotRequireWeekdays() {
+        let defaultsStore = CaffeineScheduleStore(defaults: defaults)
+        let model = ScheduleSettingsModel(store: defaultsStore)
+        model.repeatChoice = .custom
+        model.customFrequency = .monthly
+        model.weekdays = []
+
+        model.save()
+
+        XCTAssertEqual(model.message, "Schedule saved. The next scheduled time will take over automatically.")
+        XCTAssertTrue(defaultsStore.load().enabled)
+        XCTAssertEqual(defaultsStore.load().recurrence?.frequency, .monthly)
+    }
+
+    func testCustomRecurrenceRejectsEndDateBeforeAnchor() {
+        let now = Date(timeIntervalSinceReferenceDate: 900_000)
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let model = ScheduleSettingsModel(store: store, now: { now })
+        model.repeatChoice = .custom
+        model.customFrequency = .daily
+        model.recurrenceEnd = .onDate
+        model.recurrenceEndDate = now.addingTimeInterval(-86_400)
+
+        model.save()
+
+        XCTAssertEqual(model.message, "Choose an end date on or after the schedule starts.")
+        XCTAssertFalse(store.load().enabled)
+    }
+
+    func testReloadingCustomWeeklyRuleDoesNotCollapseSelectedDays() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let anchor = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7))!
+        let store = CaffeineScheduleStore(defaults: defaults)
+        store.save(CaffeineSchedule(
+            enabled: true,
+            weekdays: [2, 4, 6],
+            recurrence: CaffeineRecurrence(
+                frequency: .weekly,
+                anchorDate: anchor,
+                weekdays: [2, 4, 6],
+                calendar: calendar
+            )
+        ))
+        let model = ScheduleSettingsModel(store: store, calendarProvider: { calendar })
+
+        XCTAssertEqual(model.repeatChoice, .custom)
+        model.save()
+
+        XCTAssertEqual(store.load().recurrence?.weekdays, [2, 4, 6])
+    }
+
+    func testOpeningCustomFromPresetSeedsDraftFromThatPreset() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7))!
+        let model = ScheduleSettingsModel(
+            store: CaffeineScheduleStore(defaults: defaults),
+            calendarProvider: { calendar },
+            now: { now }
+        )
+        model.customFrequency = .weekly
+        model.customInterval = 4
+        model.recurrenceEnd = .afterOccurrences
+        model.repeatChoice = .everyMonth
+
+        model.prepareCustomRecurrence()
+
+        XCTAssertEqual(model.customFrequency, .monthly)
+        XCTAssertEqual(model.customInterval, 1)
+        XCTAssertEqual(model.recurrenceEnd, .never)
+    }
 }

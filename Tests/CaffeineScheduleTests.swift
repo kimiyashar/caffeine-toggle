@@ -98,6 +98,15 @@ final class CaffeineScheduleTests: XCTestCase {
         )
     }
 
+    func testOvernightNextTransitionAfterMidnightStillFindsMorningOff() {
+        let schedule = CaffeineSchedule(enabled: true, onMinutes: 22 * 60, offMinutes: 6 * 60)
+
+        XCTAssertEqual(
+            schedule.nextTransition(after: date(2, 0, day: 5), calendar: calendar),
+            CaffeineSchedule.Transition(date: date(6, 0, day: 5), turnsOn: false)
+        )
+    }
+
     func testSpringForwardUsesNextValidWallClockTime() throws {
         var newYork = Calendar(identifier: .gregorian)
         newYork.timeZone = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
@@ -231,5 +240,256 @@ final class CaffeineScheduleTests: XCTestCase {
                 }
             }
         }
+    }
+
+    func testDailyRecurrenceCanRunEveryOtherDayFromAnchor() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .daily,
+                interval: 2,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 4)
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 4), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 5), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 6), calendar: calendar))
+    }
+
+    func testWeeklyRecurrenceUsesSelectedDaysEveryOtherWeek() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .weekly,
+                interval: 2,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 7),
+                weekdays: [2, 4, 6]
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 9), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 16), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 23), calendar: calendar))
+    }
+
+    func testMonthlyRecurrenceUsesAnchorDayAndInterval() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .monthly,
+                interval: 2,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 15)
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 15), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 10, day: 15), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 11, day: 15), calendar: calendar))
+    }
+
+    func testYearlyRecurrenceUsesAnchorMonthAndDay() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .yearly,
+                interval: 2,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 15)
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 15), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2027, month: 9, day: 15), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2028, month: 9, day: 15), calendar: calendar))
+    }
+
+    func testRecurrenceCanEndAfterASetNumberOfOccurrences() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .daily,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 4),
+                occurrenceLimit: 3
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 6), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 7), calendar: calendar))
+    }
+
+    func testRecurrenceEndDateIsInclusive() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .daily,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 4),
+                endDate: date(0, 0, year: 2026, month: 9, day: 6)
+            )
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 6), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(12, 0, year: 2026, month: 9, day: 7), calendar: calendar))
+    }
+
+    func testNextTransitionFindsSparseYearlyOccurrence() throws {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .yearly,
+                anchorDate: date(0, 0, year: 2026, month: 12, day: 25)
+            )
+        )
+
+        let transition = try XCTUnwrap(schedule.nextTransition(
+            after: date(12, 0, year: 2026, month: 9, day: 4),
+            calendar: calendar
+        ))
+        XCTAssertTrue(transition.turnsOn)
+        XCTAssertEqual(transition.date, date(9, 0, year: 2026, month: 12, day: 25))
+    }
+
+    func testNonWeeklyRecurrenceDoesNotRequireWeekdaySelection() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            weekdays: [],
+            recurrence: CaffeineRecurrence(
+                frequency: .monthly,
+                anchorDate: date(0, 0, year: 2026, month: 9, day: 4)
+            )
+        )
+
+        XCTAssertTrue(schedule.isValid)
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(12, 0), calendar: calendar))
+    }
+
+    func testYearlyLeapDayRecurrenceFindsNextValidLeapYear() throws {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .yearly,
+                anchorDate: date(0, 0, year: 2024, month: 2, day: 29)
+            )
+        )
+
+        let transition = try XCTUnwrap(schedule.nextTransition(
+            after: date(12, 0, year: 2025, month: 3, day: 1),
+            calendar: calendar
+        ))
+        XCTAssertEqual(transition.date, date(9, 0, year: 2028, month: 2, day: 29))
+    }
+
+    func testMonthlyTwelveMonthLeapDayRecurrenceFindsNextLeapYear() throws {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .monthly,
+                interval: 12,
+                anchorDate: date(0, 0, year: 2024, month: 2, day: 29)
+            )
+        )
+
+        let transition = try XCTUnwrap(schedule.nextTransition(
+            after: date(12, 0, year: 2025, month: 3, day: 1),
+            calendar: calendar
+        ))
+        XCTAssertEqual(transition.date, date(9, 0, year: 2028, month: 2, day: 29))
+    }
+
+    func testYearlyLeapDayRecurrenceSkipsNonLeapCentury() throws {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            onMinutes: 9 * 60,
+            offMinutes: 17 * 60,
+            recurrence: CaffeineRecurrence(
+                frequency: .yearly,
+                anchorDate: date(0, 0, year: 2096, month: 2, day: 29)
+            )
+        )
+
+        let transition = try XCTUnwrap(schedule.nextTransition(
+            after: date(12, 0, year: 2097, month: 3, day: 1),
+            calendar: calendar
+        ))
+        XCTAssertEqual(transition.date, date(9, 0, year: 2104, month: 2, day: 29))
+    }
+
+    func testPersistedFloatingAnchorKeepsItsCalendarDayAcrossTimeZones() throws {
+        var tokyo = Calendar(identifier: .gregorian)
+        tokyo.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        var losAngeles = Calendar(identifier: .gregorian)
+        losAngeles.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let tokyoAnchor = tokyo.date(from: DateComponents(year: 2026, month: 9, day: 5))!
+        let recurrence = CaffeineRecurrence(
+            frequency: .monthly,
+            anchorDate: tokyoAnchor,
+            calendar: tokyo
+        )
+        let persisted = try JSONDecoder().decode(
+            CaffeineRecurrence.self,
+            from: JSONEncoder().encode(recurrence)
+        )
+        let losAngelesSeptemberFifth = losAngeles.date(from: DateComponents(year: 2026, month: 9, day: 5))!
+
+        XCTAssertTrue(persisted.includes(losAngelesSeptemberFifth, calendar: losAngeles))
+    }
+
+    func testMonthlyRecurrenceSupportsCalendarsWithLeapMonths() throws {
+        var hebrew = Calendar(identifier: .hebrew)
+        hebrew.timeZone = TimeZone(secondsFromGMT: 0)!
+        let anchor = try XCTUnwrap(hebrew.date(from: DateComponents(year: 5784, month: 1, day: 15)))
+        let target = try XCTUnwrap(hebrew.date(from: DateComponents(year: 5784, month: 13, day: 1)))
+        let recurrence = CaffeineRecurrence(
+            frequency: .monthly,
+            interval: 12,
+            anchorDate: anchor
+        )
+
+        let occurrence = try XCTUnwrap(recurrence.nextOccurrence(onOrAfter: target, calendar: hebrew))
+
+        let components = hebrew.dateComponents([.year, .month, .day], from: occurrence)
+        XCTAssertEqual(components.year, 5784)
+        XCTAssertEqual(components.month, 13)
+        XCTAssertEqual(components.day, 15)
+    }
+
+    func testYearlyRecurrenceSupportsCalendarsWhoseYearResetsAcrossEras() throws {
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = TimeZone(secondsFromGMT: 0)!
+        var japanese = Calendar(identifier: .japanese)
+        japanese.timeZone = gregorian.timeZone
+        let anchor = gregorian.date(from: DateComponents(year: 2018, month: 9, day: 4))!
+        let target = gregorian.date(from: DateComponents(year: 2020, month: 1, day: 1))!
+        let expected = gregorian.date(from: DateComponents(year: 2020, month: 9, day: 4))!
+        let recurrence = CaffeineRecurrence(
+            frequency: .yearly,
+            anchorDate: anchor,
+            calendar: japanese
+        )
+        let persisted = try JSONDecoder().decode(
+            CaffeineRecurrence.self,
+            from: JSONEncoder().encode(recurrence)
+        )
+
+        XCTAssertEqual(persisted.nextOccurrence(onOrAfter: target, calendar: japanese), expected)
     }
 }
