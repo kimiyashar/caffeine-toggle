@@ -7,7 +7,8 @@ A native macOS Control Center toggle with timers and repeating schedules that ke
 - Single-click the mug: toggle immediately
 - Double-click the mug: open Timer and Repeat settings
 - Timer: keep Caffeine on for 30 minutes, 1, 2, 4, or 8 hours, then turn off automatically
-- Repeat: run every day, weekdays, weekends, or any custom set of days
+- Repeat: run daily, weekly, monthly, yearly, or on custom intervals and weekday combinations
+- Calendar-style Custom recurrence can end never, on a date, or after a chosen number of occurrences
 - Choose separate on and off times; overnight schedules are supported
 - Empty mug: normal sleep behavior
 - Filled mug: prevents idle sleep and disables clamshell sleep
@@ -51,7 +52,7 @@ Copy it to `/Applications` or `~/Applications`, launch it, then open **Control C
 
 - Single-click the mug to toggle Caffeine immediately.
 - Double-click the mug to open the Timer and Repeat window.
-- Choose **Timer** for a one-off session, or **Repeat** for **Every day**, **Weekdays**, **Weekends**, or **Custom** days and on/off times.
+- Choose **Timer** for a one-off session, or **Repeat** for daily, weekly, monthly, yearly, or **Custom…** recurrence with intervals, weekdays, and end conditions.
 - Manual changes remain available; the next scheduled boundary takes over automatically.
 
 For automatic startup, add Caffeine Toggle under **System Settings → General → Login Items**.

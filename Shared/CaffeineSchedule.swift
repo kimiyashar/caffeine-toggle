@@ -1,5 +1,294 @@
 import Foundation
 
+enum CaffeineRecurrenceFrequency: String, Codable, CaseIterable {
+    case daily
+    case weekly
+    case monthly
+    case yearly
+}
+
+struct CaffeineRecurrence: Equatable, Codable {
+    private struct FloatingDate: Equatable, Codable {
+        let era: Int?
+        let year: Int
+        let month: Int
+        let day: Int
+        let isLeapMonth: Bool?
+    }
+
+    var frequency: CaffeineRecurrenceFrequency
+    var interval: Int
+    var anchorDate: Date
+    var weekdays: Set<Int>
+    var endDate: Date?
+    var occurrenceLimit: Int?
+    private var floatingAnchor: FloatingDate?
+    private var floatingEnd: FloatingDate?
+
+    init(
+        frequency: CaffeineRecurrenceFrequency,
+        interval: Int = 1,
+        anchorDate: Date,
+        weekdays: Set<Int> = [],
+        endDate: Date? = nil,
+        occurrenceLimit: Int? = nil,
+        calendar: Calendar? = nil
+    ) {
+        self.frequency = frequency
+        self.interval = min(99, max(1, interval))
+        self.anchorDate = anchorDate
+        self.weekdays = Set(weekdays.filter { (1...7).contains($0) })
+        self.endDate = endDate.map { max($0, anchorDate) }
+        self.occurrenceLimit = occurrenceLimit.map { min(999, max(1, $0)) }
+        floatingAnchor = calendar.map { Self.floatingDate(for: anchorDate, calendar: $0) }
+        floatingEnd = calendar.flatMap { calendar in
+            self.endDate.map { Self.floatingDate(for: $0, calendar: calendar) }
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case frequency
+        case interval
+        case anchorDate
+        case weekdays
+        case endDate
+        case occurrenceLimit
+        case floatingAnchor
+        case floatingEnd
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            frequency: try container.decode(CaffeineRecurrenceFrequency.self, forKey: .frequency),
+            interval: try container.decodeIfPresent(Int.self, forKey: .interval) ?? 1,
+            anchorDate: try container.decode(Date.self, forKey: .anchorDate),
+            weekdays: try container.decodeIfPresent(Set<Int>.self, forKey: .weekdays) ?? [],
+            endDate: try container.decodeIfPresent(Date.self, forKey: .endDate),
+            occurrenceLimit: try container.decodeIfPresent(Int.self, forKey: .occurrenceLimit)
+        )
+        floatingAnchor = try container.decodeIfPresent(FloatingDate.self, forKey: .floatingAnchor)
+        floatingEnd = try container.decodeIfPresent(FloatingDate.self, forKey: .floatingEnd)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(frequency, forKey: .frequency)
+        try container.encode(interval, forKey: .interval)
+        try container.encode(anchorDate, forKey: .anchorDate)
+        try container.encode(weekdays, forKey: .weekdays)
+        try container.encodeIfPresent(endDate, forKey: .endDate)
+        try container.encodeIfPresent(occurrenceLimit, forKey: .occurrenceLimit)
+        try container.encodeIfPresent(floatingAnchor, forKey: .floatingAnchor)
+        try container.encodeIfPresent(floatingEnd, forKey: .floatingEnd)
+    }
+
+    func includes(_ day: Date, calendar: Calendar) -> Bool {
+        let candidate = calendar.startOfDay(for: day)
+        let anchor = localAnchorDate(in: calendar)
+        guard candidate >= anchor else { return false }
+        if let endDate = localEndDate(in: calendar), candidate > endDate { return false }
+        guard matchesPattern(candidate, anchor: anchor, calendar: calendar) else { return false }
+        if let occurrenceLimit {
+            var occurrence = 0
+            var cursor = anchor
+            while cursor <= candidate {
+                if matchesPattern(cursor, anchor: anchor, calendar: calendar) {
+                    occurrence += 1
+                    if cursor == candidate { return occurrence <= occurrenceLimit }
+                }
+                guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { return false }
+                cursor = next
+            }
+            return false
+        }
+        return true
+    }
+
+    func nextOccurrence(onOrAfter day: Date, calendar: Calendar) -> Date? {
+        let anchor = localAnchorDate(in: calendar)
+        let target = max(calendar.startOfDay(for: day), anchor)
+
+        switch frequency {
+        case .daily:
+            let distance = calendar.dateComponents([.day], from: anchor, to: target).day ?? 0
+            let steps = (max(0, distance) + interval - 1) / interval
+            guard let candidate = calendar.date(byAdding: .day, value: steps * interval, to: anchor) else { return nil }
+            return includes(candidate, calendar: calendar) ? candidate : nil
+
+        case .weekly:
+            var candidate = target
+            for _ in 0..<(interval * 7 + 7) {
+                if includes(candidate, calendar: calendar) { return candidate }
+                guard let next = calendar.date(byAdding: .day, value: 1, to: candidate) else { return nil }
+                candidate = next
+            }
+            return nil
+
+        case .monthly:
+            guard let anchorDay = calendar.dateComponents([.day], from: anchor).day,
+                  let anchorMonthStart = calendar.dateInterval(of: .month, for: anchor)?.start,
+                  let targetMonthStart = calendar.dateInterval(of: .month, for: target)?.start else { return nil }
+            let monthDistance = calendar.dateComponents(
+                [.month],
+                from: anchorMonthStart,
+                to: targetMonthStart
+            ).month ?? 0
+            var step = (max(0, monthDistance) + interval - 1) / interval
+            for _ in 0..<4_800 {
+                guard let monthStart = calendar.date(
+                    byAdding: .month,
+                    value: step * interval,
+                    to: anchorMonthStart
+                ) else { return nil }
+                if let candidate = exactDate(inMonthContaining: monthStart, day: anchorDay, calendar: calendar),
+                   candidate >= target {
+                    if includes(candidate, calendar: calendar) { return candidate }
+                    if endDate != nil || occurrenceLimit != nil { return nil }
+                }
+                step += 1
+            }
+            return nil
+
+        case .yearly:
+            let anchorParts = calendar.dateComponents([.month, .day, .isLeapMonth], from: anchor)
+            guard let month = anchorParts.month, let day = anchorParts.day,
+                  let anchorYearStart = calendar.dateInterval(of: .year, for: anchor)?.start,
+                  let targetYearStart = calendar.dateInterval(of: .year, for: target)?.start else { return nil }
+            let yearDistance = calendar.dateComponents(
+                [.year],
+                from: anchorYearStart,
+                to: targetYearStart
+            ).year ?? 0
+            var step = (max(0, yearDistance) + interval - 1) / interval
+            for _ in 0..<400 {
+                guard let yearStart = calendar.date(
+                    byAdding: .year,
+                    value: step * interval,
+                    to: anchorYearStart
+                ) else { return nil }
+                if let candidate = exactDate(
+                    inYearContaining: yearStart,
+                    month: month,
+                    day: day,
+                    isLeapMonth: anchorParts.isLeapMonth,
+                    calendar: calendar
+                ), candidate >= target {
+                    if includes(candidate, calendar: calendar) { return candidate }
+                    if endDate != nil || occurrenceLimit != nil { return nil }
+                }
+                step += 1
+            }
+            return nil
+        }
+    }
+
+    private func exactDate(
+        inYearContaining yearStart: Date,
+        month: Int,
+        day: Int,
+        isLeapMonth: Bool?,
+        calendar: Calendar
+    ) -> Date? {
+        var components = calendar.dateComponents([.era, .year], from: yearStart)
+        components.calendar = calendar
+        components.timeZone = calendar.timeZone
+        components.month = month
+        components.day = day
+        components.isLeapMonth = isLeapMonth
+        guard let date = calendar.date(from: components) else { return nil }
+        let result = calendar.dateComponents([.era, .year, .month, .day, .isLeapMonth], from: date)
+        guard result.era == components.era,
+              result.year == components.year,
+              result.month == month,
+              result.day == day,
+              result.isLeapMonth == isLeapMonth else { return nil }
+        return date
+    }
+
+    private func exactDate(inMonthContaining monthStart: Date, day: Int, calendar: Calendar) -> Date? {
+        var components = calendar.dateComponents([.era, .year, .month, .isLeapMonth], from: monthStart)
+        components.calendar = calendar
+        components.timeZone = calendar.timeZone
+        components.day = day
+        guard let date = calendar.date(from: components) else { return nil }
+        let result = calendar.dateComponents([.era, .year, .month, .day, .isLeapMonth], from: date)
+        guard result.era == components.era,
+              result.year == components.year,
+              result.month == components.month,
+              result.day == day,
+              result.isLeapMonth == components.isLeapMonth else { return nil }
+        return date
+    }
+
+    func localAnchorDate(in calendar: Calendar) -> Date {
+        Self.date(from: floatingAnchor, fallback: anchorDate, calendar: calendar)
+    }
+
+    func localEndDate(in calendar: Calendar) -> Date? {
+        guard endDate != nil else { return nil }
+        let resolved = Self.date(from: floatingEnd, fallback: endDate!, calendar: calendar)
+        return max(resolved, localAnchorDate(in: calendar))
+    }
+
+    private static func floatingDate(for date: Date, calendar: Calendar) -> FloatingDate {
+        let components = calendar.dateComponents([.era, .year, .month, .day, .isLeapMonth], from: date)
+        return FloatingDate(
+            era: components.era,
+            year: components.year!,
+            month: components.month!,
+            day: components.day!,
+            isLeapMonth: components.isLeapMonth
+        )
+    }
+
+    private static func date(from floating: FloatingDate?, fallback: Date, calendar: Calendar) -> Date {
+        guard let floating else {
+            return calendar.startOfDay(for: fallback)
+        }
+        var components = DateComponents(
+            calendar: calendar,
+            timeZone: calendar.timeZone,
+            era: floating.era,
+            year: floating.year,
+            month: floating.month,
+            day: floating.day
+        )
+        components.isLeapMonth = floating.isLeapMonth
+        guard let date = calendar.date(from: components) else {
+            return calendar.startOfDay(for: fallback)
+        }
+        return calendar.startOfDay(for: date)
+    }
+
+    private func matchesPattern(_ candidate: Date, anchor: Date, calendar: Calendar) -> Bool {
+        switch frequency {
+        case .daily:
+            let distance = calendar.dateComponents([.day], from: anchor, to: candidate).day ?? -1
+            return distance >= 0 && distance.isMultiple(of: interval)
+        case .weekly:
+            let anchorWeek = calendar.dateInterval(of: .weekOfYear, for: anchor)?.start ?? anchor
+            let candidateWeek = calendar.dateInterval(of: .weekOfYear, for: candidate)?.start ?? candidate
+            let distance = calendar.dateComponents([.weekOfYear], from: anchorWeek, to: candidateWeek).weekOfYear ?? -1
+            let selectedDays = weekdays.isEmpty ? [calendar.component(.weekday, from: anchor)] : weekdays
+            return distance >= 0
+                && distance.isMultiple(of: interval)
+                && selectedDays.contains(calendar.component(.weekday, from: candidate))
+        case .monthly:
+            let distance = calendar.dateComponents([.month], from: anchor, to: candidate).month ?? -1
+            return distance >= 0
+                && distance.isMultiple(of: interval)
+                && calendar.component(.day, from: candidate) == calendar.component(.day, from: anchor)
+        case .yearly:
+            let distance = calendar.dateComponents([.year], from: anchor, to: candidate).year ?? -1
+            return distance >= 0
+                && distance.isMultiple(of: interval)
+                && calendar.component(.month, from: candidate) == calendar.component(.month, from: anchor)
+                && calendar.component(.day, from: candidate) == calendar.component(.day, from: anchor)
+        }
+    }
+}
+
 struct CaffeineSchedule: Equatable {
     static let defaultOnMinutes = 9 * 60
     static let defaultOffMinutes = 17 * 60
@@ -9,17 +298,20 @@ struct CaffeineSchedule: Equatable {
     var onMinutes: Int
     var offMinutes: Int
     var weekdays: Set<Int>
+    var recurrence: CaffeineRecurrence?
 
     init(
         enabled: Bool = false,
         onMinutes: Int = defaultOnMinutes,
         offMinutes: Int = defaultOffMinutes,
-        weekdays: Set<Int> = everyDay
+        weekdays: Set<Int> = everyDay,
+        recurrence: CaffeineRecurrence? = nil
     ) {
         self.enabled = enabled
         self.onMinutes = Self.normalized(onMinutes)
         self.offMinutes = Self.normalized(offMinutes)
         self.weekdays = weekdays.intersection(Self.everyDay)
+        self.recurrence = recurrence
     }
 
     struct Transition: Equatable {
@@ -28,7 +320,7 @@ struct CaffeineSchedule: Equatable {
     }
 
     var isValid: Bool {
-        onMinutes != offMinutes && !weekdays.isEmpty
+        onMinutes != offMinutes && (recurrence != nil || !weekdays.isEmpty)
     }
 
     func shouldBeCaffeinated(at date: Date, calendar: Calendar = .current) -> Bool {
@@ -52,12 +344,33 @@ struct CaffeineSchedule: Equatable {
 
     func nextTransition(after date: Date, calendar: Calendar = .current) -> Transition? {
         guard enabled, isValid else { return nil }
-        let candidates = transitions(relativeTo: date, dayOffsets: 0...8, calendar: calendar)
+        if let recurrence {
+            let referenceDay = calendar.startOfDay(for: date)
+            var candidates: [Transition] = []
+            if let previousDay = calendar.date(byAdding: .day, value: -1, to: referenceDay),
+               recurrence.includes(previousDay, calendar: calendar) {
+                candidates += transitions(for: previousDay, calendar: calendar)
+            }
+            if let occurrence = recurrence.nextOccurrence(onOrAfter: referenceDay, calendar: calendar) {
+                candidates += transitions(for: occurrence, calendar: calendar)
+                if !candidates.contains(where: { $0.date > date }),
+                   let followingDay = calendar.date(byAdding: .day, value: 1, to: occurrence),
+                   let nextOccurrence = recurrence.nextOccurrence(onOrAfter: followingDay, calendar: calendar) {
+                    candidates += transitions(for: nextOccurrence, calendar: calendar)
+                }
+            }
+            let upcoming = candidates.filter { $0.date > date }
+            guard let nextDate = upcoming.map(\.date).min() else { return nil }
+            let simultaneous = upcoming.filter { $0.date == nextDate }
+            return simultaneous.first { !$0.turnsOn } ?? simultaneous.first
+        }
+        let candidates = transitions(relativeTo: date, dayOffsets: -1...8, calendar: calendar)
             .filter { $0.date > date }
         guard let nextDate = candidates.map(\.date).min() else { return nil }
         let simultaneous = candidates.filter { $0.date == nextDate }
         return simultaneous.first { !$0.turnsOn } ?? simultaneous.first
     }
+
 
     private func transitions(
         relativeTo reference: Date,
@@ -70,21 +383,27 @@ struct CaffeineSchedule: Equatable {
         for offset in dayOffsets {
             guard let startDay = calendar.date(byAdding: .day, value: offset, to: referenceDay) else { continue }
             let weekday = calendar.component(.weekday, from: startDay)
-            guard weekdays.contains(weekday) else { continue }
-            if let onDate = wallClockDate(minutes: onMinutes, on: startDay, calendar: calendar) {
-                result.append(Transition(date: onDate, turnsOn: true))
-            }
+            let isIncluded = recurrence?.includes(startDay, calendar: calendar) ?? weekdays.contains(weekday)
+            guard isIncluded else { continue }
+            result += transitions(for: startDay, calendar: calendar)
+        }
+        return result
+    }
 
-            let offDay: Date
-            if onMinutes < offMinutes {
-                offDay = startDay
-            } else {
-                guard let nextDay = calendar.date(byAdding: .day, value: 1, to: startDay) else { continue }
-                offDay = nextDay
-            }
-            if let offDate = wallClockDate(minutes: offMinutes, on: offDay, calendar: calendar) {
-                result.append(Transition(date: offDate, turnsOn: false))
-            }
+    private func transitions(for startDay: Date, calendar: Calendar) -> [Transition] {
+        var result: [Transition] = []
+        if let onDate = wallClockDate(minutes: onMinutes, on: startDay, calendar: calendar) {
+            result.append(Transition(date: onDate, turnsOn: true))
+        }
+        let offDay: Date
+        if onMinutes < offMinutes {
+            offDay = startDay
+        } else {
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: startDay) else { return result }
+            offDay = nextDay
+        }
+        if let offDate = wallClockDate(minutes: offMinutes, on: offDay, calendar: calendar) {
+            result.append(Transition(date: offDate, turnsOn: false))
         }
         return result
     }
@@ -124,6 +443,7 @@ final class CaffeineScheduleStore {
         static let onMinutes = "schedule.onMinutes"
         static let offMinutes = "schedule.offMinutes"
         static let weekdaysMask = "schedule.weekdaysMask"
+        static let recurrence = "schedule.recurrence"
         static let manualOverrideUntil = "schedule.manualOverrideUntil"
         static let sessionEndDate = "session.endDate"
     }
@@ -147,11 +467,15 @@ final class CaffeineScheduleStore {
     func load() -> CaffeineSchedule {
         let mask = defaults.object(forKey: Key.weekdaysMask) as? Int ?? 0b111_1111
         let weekdays = Set((1...7).filter { mask & (1 << ($0 - 1)) != 0 })
+        let recurrence = (defaults.data(forKey: Key.recurrence)).flatMap {
+            try? JSONDecoder().decode(CaffeineRecurrence.self, from: $0)
+        }
         return CaffeineSchedule(
             enabled: defaults.bool(forKey: Key.enabled),
             onMinutes: defaults.object(forKey: Key.onMinutes) as? Int ?? CaffeineSchedule.defaultOnMinutes,
             offMinutes: defaults.object(forKey: Key.offMinutes) as? Int ?? CaffeineSchedule.defaultOffMinutes,
-            weekdays: weekdays
+            weekdays: weekdays,
+            recurrence: recurrence
         )
     }
 
@@ -161,6 +485,12 @@ final class CaffeineScheduleStore {
         defaults.set(schedule.onMinutes, forKey: Key.onMinutes)
         defaults.set(schedule.offMinutes, forKey: Key.offMinutes)
         defaults.set(mask, forKey: Key.weekdaysMask)
+        if let recurrence = schedule.recurrence,
+           let data = try? JSONEncoder().encode(recurrence) {
+            defaults.set(data, forKey: Key.recurrence)
+        } else {
+            defaults.removeObject(forKey: Key.recurrence)
+        }
         defaults.synchronize()
     }
 }
