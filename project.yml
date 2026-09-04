@@ -24,8 +24,8 @@ targets:
       path: Info.plist
       properties:
         CFBundleDisplayName: Caffeine Toggle
-        CFBundleShortVersionString: "1.7"
-        CFBundleVersion: "8"
+        CFBundleShortVersionString: "2.0"
+        CFBundleVersion: "11"
         LSUIElement: true
         NSHighResolutionCapable: true
     entitlements:
@@ -53,8 +53,8 @@ targets:
       path: Control/Info.plist
       properties:
         CFBundleDisplayName: Caffeine Controls
-        CFBundleShortVersionString: "1.7"
-        CFBundleVersion: "8"
+        CFBundleShortVersionString: "2.0"
+        CFBundleVersion: "11"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
@@ -75,6 +75,8 @@ targets:
       - path: Tests
       - path: Shared
       - path: App/ClamshellController.swift
+      - path: App/ScheduleSettings.swift
+      - path: App/SingleInstanceLock.swift
     dependencies:
       - sdk: IOKit.framework
     settings:
