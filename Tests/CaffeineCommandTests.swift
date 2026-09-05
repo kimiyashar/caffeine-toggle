@@ -26,6 +26,8 @@ final class CaffeineCommandTests: XCTestCase {
     func testControlStateIdentifiersStayStableAcrossAppAndExtension() {
         XCTAssertEqual(CaffeineCommand.controlBundleIdentifier, "com.kimiyashar.CaffeineToggle.Controls")
         XCTAssertEqual(CaffeineCommand.controlKind, "com.kimiyashar.CaffeineToggle.control")
+        XCTAssertEqual(CaffeineCommand.scheduleControlKind, "com.kimiyashar.CaffeineToggle.schedule")
+        XCTAssertNotEqual(CaffeineCommand.scheduleControlKind, CaffeineCommand.controlKind)
         XCTAssertEqual(CaffeineCommand.requestStateNotification, "com.kimiyashar.CaffeineToggle.requestState")
         XCTAssertEqual(CaffeineCommand.stateIsOnNotification, "com.kimiyashar.CaffeineToggle.stateIsOn")
         XCTAssertEqual(CaffeineCommand.stateIsOffNotification, "com.kimiyashar.CaffeineToggle.stateIsOff")

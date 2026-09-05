@@ -46,10 +46,7 @@ private final class CaffeineStateResponse: @unchecked Sendable {
 
 private enum SharedState {
     static let key = "isCaffeinated"
-    static let lastToggleTimeKey = "lastToggleTime"
-    static let doubleClickOriginalStateKey = "doubleClickOriginalState"
     static let pendingShowKey = "schedule.pendingShow"
-    private static let gestureLock = NSLock()
 
     static var isCaffeinated: Bool {
         get { UserDefaults.standard.bool(forKey: key) }
@@ -59,15 +56,6 @@ private enum SharedState {
         }
     }
 
-    static var lastToggleTime: Double? {
-        get { UserDefaults.standard.object(forKey: lastToggleTimeKey) as? Double }
-        set { UserDefaults.standard.set(newValue, forKey: lastToggleTimeKey) }
-    }
-
-    static var doubleClickOriginalState: Bool? {
-        get { UserDefaults.standard.object(forKey: doubleClickOriginalStateKey) as? Bool }
-        set { UserDefaults.standard.set(newValue, forKey: doubleClickOriginalStateKey) }
-    }
 
     static func currentHostState(timeout: TimeInterval = 0.2) async -> Bool? {
         await withCheckedContinuation { continuation in
@@ -110,23 +98,9 @@ private enum SharedState {
         }
     }
 
-    static func handleTap(value: Bool, now: Double) async -> Bool? {
-        let liveState = await currentHostState() ?? isCaffeinated
-        return gestureLock.withLock {
-            if CaffeineDoubleClick.detect(previous: lastToggleTime, current: now) {
-                let restoredValue = doubleClickOriginalState ?? liveState
-                lastToggleTime = nil
-                doubleClickOriginalState = nil
-                isCaffeinated = restoredValue
-                return restoredValue
-            }
-
-            lastToggleTime = now
-            doubleClickOriginalState = liveState
-            isCaffeinated = value
-            notifyMainApp(enabled: value)
-            return nil
-        }
+    static func setCaffeinated(_ value: Bool) {
+        isCaffeinated = value
+        notifyMainApp(enabled: value)
     }
 
     static func notifyMainApp(enabled: Bool) {
@@ -177,7 +151,7 @@ struct CaffeineControl: ControlWidget {
             )
         }
         .displayName("Caffeine")
-        .description("Single-click to toggle. Double-click to set a timer or repeating schedule.")
+        .description("Single-click to toggle Caffeine.")
     }
 
     struct Provider: ControlValueProvider {
@@ -198,13 +172,7 @@ struct SetCaffeineIntent: SetValueIntent {
     var value: Bool
 
     func perform() async throws -> some IntentResult {
-        let restoredState = await SharedState.handleTap(
-            value: value,
-            now: Date.timeIntervalSinceReferenceDate
-        )
-        if let restoredState {
-            SharedState.showSchedule(restoring: restoredState)
-        }
+        SharedState.setCaffeinated(value)
         return .result()
     }
 }
@@ -220,7 +188,7 @@ struct ShowScheduleIntent: AppIntent {
 }
 
 struct CaffeineScheduleControl: ControlWidget {
-    static let kind = "com.kimiyashar.CaffeineToggle.schedule"
+    static let kind = CaffeineCommand.scheduleControlKind
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {

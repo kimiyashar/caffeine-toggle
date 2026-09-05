@@ -149,7 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var caffeinateProcess: Process?
     private var scheduleTimer: Timer?
     private var restartPolicy = CaffeineRestartPolicy()
-    private var pendingManualFinalizationID: UUID?
+    private var legacyRestoreBuffer = CaffeineLegacyRestoreBuffer()
     private let scheduleStore = CaffeineScheduleStore()
     private lazy var scheduleWindowController = ScheduleWindowController(store: scheduleStore)
 
@@ -204,9 +204,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        if let pendingManualFinalizationID {
-            finalizeManualStateChange(id: pendingManualFinalizationID, now: Date())
-        }
         scheduleTimer?.invalidate()
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         for name in observedDarwinNotifications {
@@ -248,13 +245,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case CaffeineCommand.turnOffNotification:
             handleManualStateChange(to: false)
         case CaffeineCommand.scheduleChangedNotification:
-            cancelPendingManualFinalization()
+            legacyRestoreBuffer.invalidate()
             scheduleStore.manualOverrideUntil = nil
             reconcileAutomationWithCurrentTime(respectingManualOverride: false)
             applyDesiredState()
             scheduleNextTransition()
         case CaffeineCommand.sessionChangedNotification:
-            cancelPendingManualFinalization()
+            legacyRestoreBuffer.invalidate()
             scheduleStore.manualOverrideUntil = nil
             reconcileAutomationWithCurrentTime(
                 respectingManualOverride: false,
@@ -281,46 +278,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func restoreStateAfterDoubleClickAndShow(enabled: Bool) {
-        cancelPendingManualFinalization()
+        let now = Date()
+        guard let snapshot = legacyRestoreBuffer.consume(restoring: enabled, at: now) else {
+            scheduleWindowController.present()
+            SharedState.hasPendingShowRequest = false
+            return
+        }
+        scheduleStore.sessionEndDate = snapshot.sessionEndDate
+        scheduleStore.manualOverrideUntil = snapshot.manualOverrideUntil
         SharedState.isCaffeinated = enabled
-        reconcileAutomationWithCurrentTime()
+        reconcileAutomationWithCurrentTime(now: now)
         applyDesiredState()
-        scheduleNextTransition()
+        scheduleNextTransition(now: now)
         scheduleWindowController.present()
         SharedState.hasPendingShowRequest = false
     }
 
     private func handleManualStateChange(to enabled: Bool, now: Date = Date()) {
-        cancelPendingManualFinalization()
+        legacyRestoreBuffer.capture(CaffeineLegacyRestoreSnapshot(
+            state: SharedState.isCaffeinated,
+            sessionEndDate: scheduleStore.sessionEndDate,
+            manualOverrideUntil: scheduleStore.manualOverrideUntil,
+            capturedAt: now
+        ))
         SharedState.isCaffeinated = enabled
-        applyDesiredState()
-        scheduleNextTransition(now: now)
-
-        let id = UUID()
-        pendingManualFinalizationID = id
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + CaffeineDoubleClick.maximumInterval + 0.25
-        ) { [weak self] in
-            self?.finalizeManualStateChange(id: id, now: Date())
-        }
-    }
-
-    private func finalizeManualStateChange(id: UUID, now: Date) {
-        guard pendingManualFinalizationID == id else { return }
-        pendingManualFinalizationID = nil
         scheduleStore.sessionEndDate = nil
         let schedule = scheduleStore.load()
         scheduleStore.manualOverrideUntil = schedule.nextTransition(after: now)?.date
         scheduleWindowController.reloadIfVisible()
+        applyDesiredState()
         scheduleNextTransition(now: now)
-    }
-
-    private func cancelPendingManualFinalization() {
-        pendingManualFinalizationID = nil
     }
 
     @objc private func systemClockChanged() {
         let now = Date()
+        legacyRestoreBuffer.invalidate()
         scheduleWindowController.reloadIfVisible()
         let schedule = scheduleStore.load()
         scheduleStore.manualOverrideUntil = schedule.rebasedManualOverride(
