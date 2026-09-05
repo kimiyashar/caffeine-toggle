@@ -1,6 +1,7 @@
 enum CaffeineCommand {
     static let controlBundleIdentifier = "com.kimiyashar.CaffeineToggle.Controls"
     static let controlKind = "com.kimiyashar.CaffeineToggle.control"
+    static let scheduleControlKind = "com.kimiyashar.CaffeineToggle.schedule"
     static let turnOnNotification = "com.kimiyashar.CaffeineToggle.turnOn"
     static let turnOffNotification = "com.kimiyashar.CaffeineToggle.turnOff"
     static let scheduleChangedNotification = "com.kimiyashar.CaffeineToggle.scheduleChanged"

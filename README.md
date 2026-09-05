@@ -5,7 +5,7 @@ A native macOS Control Center toggle with timers and repeating schedules that ke
 **Website:** [kimiyashar.github.io/caffeine-toggle](https://kimiyashar.github.io/caffeine-toggle/)
 
 - Single-click the mug: toggle immediately
-- Double-click the mug: open Timer and Repeat settings
+- Add the separate **Caffeine Timer & Repeat** control to open scheduling reliably
 - Timer: keep Caffeine on for 30 minutes, 1, 2, 4, or 8 hours, then turn off automatically
 - Repeat: run daily, weekly, monthly, yearly, or on custom intervals and weekday combinations
 - Calendar-style Custom recurrence can end never, on a date, or after a chosen number of occurrences
@@ -48,10 +48,10 @@ The built app is located at:
 .derived/Build/Products/Release/Caffeine Toggle.app
 ```
 
-Copy it to `/Applications` or `~/Applications`, launch it, then open **Control Center → Edit Controls**, search for **Caffeine**, and add the toggle. You can also add the separate **Caffeine Timer & Repeat** control for one-click access to settings.
+Copy it to `/Applications` or `~/Applications`, launch it, then open **Control Center → Edit Controls** and search for **Caffeine**. Add both controls: **Caffeine** is the immediate ON/OFF toggle, while **Caffeine Timer & Repeat** opens scheduling.
 
 - Single-click the mug to toggle Caffeine immediately.
-- Double-click the mug to open the Timer and Repeat window.
+- Click the separate **Caffeine Timer & Repeat** control to open the scheduling window. macOS reserves secondary interaction on Control Center controls for its own edit/remove interface, so the toggle cannot reliably support double-click actions.
 - Choose **Timer** for a one-off session, or **Repeat** for daily, weekly, monthly, yearly, or **Custom…** recurrence with intervals, weekdays, and end conditions.
 - Manual changes remain available; the next scheduled boundary takes over automatically.
 
