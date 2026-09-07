@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		04B579BFF154C81F712AE4FF /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97C382C21FF15F00D7ECCCC2 /* main.swift */; };
-		09F8F53DA9706D28113C8B09 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
 		0C122DE89EF49D8D6D5076E4 /* ClamshellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3808965F3F205D3A451868 /* ClamshellController.swift */; };
 		0F31BDEC1DF2EAF0274C86E8 /* CaffeineLegacyRestore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C054D4BA5B821ED439A574 /* CaffeineLegacyRestore.swift */; };
 		139B62460DA64F93E85BA750 /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
+		22482C871E574756102BD907 /* MenuBarSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC18831A6E998BDAF076FD3 /* MenuBarSettings.swift */; };
 		2A8995511B948DEBD82F399A /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
 		2C623CC22915B4088A223F26 /* ClamshellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3808965F3F205D3A451868 /* ClamshellController.swift */; };
 		2DA165F94D00636900DAFCAA /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
@@ -19,77 +19,53 @@
 		2F807B9E964BE31AF393FD02 /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
 		315FB7E8D277E380609BE19B /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
 		31B29C32A33EAA7991DB9975 /* CaffeineScheduleStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */; };
+		3268BEA086C2427FBB355131 /* MenuBarSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC18831A6E998BDAF076FD3 /* MenuBarSettings.swift */; };
 		37A400A544441F79613C1D36 /* ScheduleSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */; };
-		46534EFE9D9F7816DE201D76 /* CaffeineControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A5D52F34AE02FC907445172A /* CaffeineControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		49679DF9D1601AC6BD6171D6 /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
 		5A530F8039AA5B4E795E78A4 /* CaffeineCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */; };
-		5D4356C1BCEA4C87C6E66CDC /* CaffeineSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */; };
 		5DEEF0C1E5DB6824447CF84D /* CaffeineLegacyRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24975F8663436A0914E21029 /* CaffeineLegacyRestoreTests.swift */; };
 		6575DD88A2208DAECBB15B14 /* SingleInstanceLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */; };
+		6D4B1BB37FBF1662BA3376B9 /* MenuBarSettingsModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB23536B48F4A6C611A1B96 /* MenuBarSettingsModelTests.swift */; };
 		70660F187B23AC4A2CB6A02A /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
 		70EB916019E5C2A25E72D5F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A7905CB8C59F068C01F0B8 /* IOKit.framework */; };
-		71A23A0DC3438A6A1163DC9E /* CaffeineAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */; };
 		71B383004E63078BD1C243C6 /* SingleInstanceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */; };
 		80466D0FF752CCA9A32BE9A3 /* CaffeineRestartPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F874826D53C0F38FF152EC /* CaffeineRestartPolicyTests.swift */; };
 		8725F07C9E54A885C4DD33F0 /* CaffeinateArgumentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36EA9FCEB45677E011CA146 /* CaffeinateArgumentsTests.swift */; };
 		8CB253DD21F367025BA5BAE1 /* CaffeineScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */; };
 		8FE0463DC0DDB932EEC351B4 /* CaffeinateArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */; };
 		95746112A20AC6679E36C5F1 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
-		AE256491CAA6FCA3C756B538 /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
+		9C1AA3763A5E8883EA12187E /* CaffeineDefaultsMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97844674B93B59310B239CAB /* CaffeineDefaultsMigration.swift */; };
 		B201DCFC69B289FCD78941AE /* SingleInstanceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */; };
 		B6AB5F942194FB079932A319 /* CaffeineRestartPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */; };
+		BE6C6F1EEC1602236B7313E1 /* CaffeineDefaultsMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1887B3B0D05A91D5FE528D55 /* CaffeineDefaultsMigrationTests.swift */; };
 		CC18F3C7DC422829E476C8AC /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A7905CB8C59F068C01F0B8 /* IOKit.framework */; };
-		CC88E295D5314A5F3FC9C884 /* CaffeineLegacyRestore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C054D4BA5B821ED439A574 /* CaffeineLegacyRestore.swift */; };
 		CF8E252A8FE2414FC9CEFBB8 /* ScheduleSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */; };
 		D26C29A976DB1E1762E54932 /* CaffeineLegacyRestore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C054D4BA5B821ED439A574 /* CaffeineLegacyRestore.swift */; };
 		EB5C6DDEE75FFC42B333A229 /* ScheduleSettingsModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */; };
 		ED234D238AB3F766FE4B3ADD /* ClamshellControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */; };
+		EF222A9134B960B325AD3E47 /* CaffeineDefaultsMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97844674B93B59310B239CAB /* CaffeineDefaultsMigration.swift */; };
 		FC3790012C375047DFF7C3C3 /* CaffeineCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */; };
-		FE8EC3B483A69ABD084DCC96 /* CaffeineControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59CF3B2410F1DDD1BD2E0651 /* CaffeineControl.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		AAA9214ADE0E2CA803C91624 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = ADD557CA21B269A7DFE18867 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AAC221D40B8BEBD13B3E70BB;
-			remoteInfo = CaffeineControls;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		04599BD4310A53E09926C0A9 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				46534EFE9D9F7816DE201D76 /* CaffeineControls.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSettingsModelTests.swift; sourceTree = "<group>"; };
 		047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstanceLock.swift; sourceTree = "<group>"; };
+		0BB23536B48F4A6C611A1B96 /* MenuBarSettingsModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarSettingsModelTests.swift; sourceTree = "<group>"; };
+		1887B3B0D05A91D5FE528D55 /* CaffeineDefaultsMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineDefaultsMigrationTests.swift; sourceTree = "<group>"; };
 		2312AB5BD5A4657BF26FF3D6 /* CaffeineToggleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CaffeineToggleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		24975F8663436A0914E21029 /* CaffeineLegacyRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineLegacyRestoreTests.swift; sourceTree = "<group>"; };
 		2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineScheduleTests.swift; sourceTree = "<group>"; };
 		3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineRestartPolicy.swift; sourceTree = "<group>"; };
 		407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineScheduleStoreTests.swift; sourceTree = "<group>"; };
 		59C054D4BA5B821ED439A574 /* CaffeineLegacyRestore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineLegacyRestore.swift; sourceTree = "<group>"; };
-		59CF3B2410F1DDD1BD2E0651 /* CaffeineControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineControl.swift; sourceTree = "<group>"; };
 		68A7905CB8C59F068C01F0B8 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineCommandTests.swift; sourceTree = "<group>"; };
 		92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClamshellControllerTests.swift; sourceTree = "<group>"; };
+		97844674B93B59310B239CAB /* CaffeineDefaultsMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineDefaultsMigration.swift; sourceTree = "<group>"; };
 		97C382C21FF15F00D7ECCCC2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		9E6BFCF946294CFA6143D652 /* CaffeineToggle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CaffeineToggle.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A5D52F34AE02FC907445172A /* CaffeineControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CaffeineControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineAppearance.swift; sourceTree = "<group>"; };
 		C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSettings.swift; sourceTree = "<group>"; };
+		CAC18831A6E998BDAF076FD3 /* MenuBarSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarSettings.swift; sourceTree = "<group>"; };
 		CF3808965F3F205D3A451868 /* ClamshellController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClamshellController.swift; sourceTree = "<group>"; };
 		CF724271A2946C70015EED0E /* CaffeineAppearanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineAppearanceTests.swift; sourceTree = "<group>"; };
 		D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstanceLockTests.swift; sourceTree = "<group>"; };
@@ -125,6 +101,7 @@
 			children = (
 				CF3808965F3F205D3A451868 /* ClamshellController.swift */,
 				97C382C21FF15F00D7ECCCC2 /* main.swift */,
+				CAC18831A6E998BDAF076FD3 /* MenuBarSettings.swift */,
 				C3F05332FB770C8DB3E5405B /* ScheduleSettings.swift */,
 				047E1EDD0A21FF08BC7B3560 /* SingleInstanceLock.swift */,
 			);
@@ -137,11 +114,13 @@
 				E36EA9FCEB45677E011CA146 /* CaffeinateArgumentsTests.swift */,
 				CF724271A2946C70015EED0E /* CaffeineAppearanceTests.swift */,
 				7CD627BAEFA255C7E88B1CEF /* CaffeineCommandTests.swift */,
+				1887B3B0D05A91D5FE528D55 /* CaffeineDefaultsMigrationTests.swift */,
 				24975F8663436A0914E21029 /* CaffeineLegacyRestoreTests.swift */,
 				D5F874826D53C0F38FF152EC /* CaffeineRestartPolicyTests.swift */,
 				407155F9794C330F767B9F39 /* CaffeineScheduleStoreTests.swift */,
 				2E2C0CCABF35CEFC67B7A395 /* CaffeineScheduleTests.swift */,
 				92FF8C841743CA36BB1AD9CA /* ClamshellControllerTests.swift */,
+				0BB23536B48F4A6C611A1B96 /* MenuBarSettingsModelTests.swift */,
 				0458ED97C68F1CED589F9E60 /* ScheduleSettingsModelTests.swift */,
 				D494ACFA532A539F77B33AEC /* SingleInstanceLockTests.swift */,
 			);
@@ -152,7 +131,6 @@
 			isa = PBXGroup;
 			children = (
 				37BD439C9E5654EA6FDC8200 /* App */,
-				E12A0CE963279CD7AED22279 /* Control */,
 				DCE90FD0D1B7797604327167 /* Shared */,
 				590CF2886E3043F891C4FB93 /* Tests */,
 				FAFDD64A3A2566A25DAF5EC1 /* Frameworks */,
@@ -166,6 +144,7 @@
 				DCD2A01E36728BD920ECF287 /* CaffeinateArguments.swift */,
 				C0399F087856C18CDF562BEF /* CaffeineAppearance.swift */,
 				E4F9E7E4ACDC39B9CBFF226C /* CaffeineCommand.swift */,
+				97844674B93B59310B239CAB /* CaffeineDefaultsMigration.swift */,
 				59C054D4BA5B821ED439A574 /* CaffeineLegacyRestore.swift */,
 				3FBD9403066BA4F132F7288F /* CaffeineRestartPolicy.swift */,
 				EBB94CB3E18C59C42D6492E8 /* CaffeineSchedule.swift */,
@@ -176,19 +155,10 @@
 		DEC2A7399A41C6F0DF075A94 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A5D52F34AE02FC907445172A /* CaffeineControls.appex */,
 				9E6BFCF946294CFA6143D652 /* CaffeineToggle.app */,
 				2312AB5BD5A4657BF26FF3D6 /* CaffeineToggleTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		E12A0CE963279CD7AED22279 /* Control */ = {
-			isa = PBXGroup;
-			children = (
-				59CF3B2410F1DDD1BD2E0651 /* CaffeineControl.swift */,
-			);
-			path = Control;
 			sourceTree = "<group>";
 		};
 		FAFDD64A3A2566A25DAF5EC1 /* Frameworks */ = {
@@ -208,12 +178,10 @@
 			buildPhases = (
 				E4C7729CEE1C7CD01679187C /* Sources */,
 				024B1E3379F54B9FD5A83CB6 /* Frameworks */,
-				04599BD4310A53E09926C0A9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				3F6A7FA2AF13748067378454 /* PBXTargetDependency */,
 			);
 			name = CaffeineToggle;
 			packageProductDependencies = (
@@ -221,23 +189,6 @@
 			productName = CaffeineToggle;
 			productReference = 9E6BFCF946294CFA6143D652 /* CaffeineToggle.app */;
 			productType = "com.apple.product-type.application";
-		};
-		AAC221D40B8BEBD13B3E70BB /* CaffeineControls */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F714B01124ADC3BA8CAAE04D /* Build configuration list for PBXNativeTarget "CaffeineControls" */;
-			buildPhases = (
-				221A3C9FC638B651280B1520 /* Sources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = CaffeineControls;
-			packageProductDependencies = (
-			);
-			productName = CaffeineControls;
-			productReference = A5D52F34AE02FC907445172A /* CaffeineControls.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 		F301BCCDE589ADD36A89215F /* CaffeineToggleTests */ = {
 			isa = PBXNativeTarget;
@@ -270,10 +221,6 @@
 						DevelopmentTeam = 9NTP754TX2;
 						ProvisioningStyle = Automatic;
 					};
-					AAC221D40B8BEBD13B3E70BB = {
-						DevelopmentTeam = 9NTP754TX2;
-						ProvisioningStyle = Automatic;
-					};
 					F301BCCDE589ADD36A89215F = {
 						DevelopmentTeam = 9NTP754TX2;
 						ProvisioningStyle = Automatic;
@@ -295,27 +242,12 @@
 			projectRoot = "";
 			targets = (
 				9E79D61B0A32E14D8E1C476E /* CaffeineToggle */,
-				AAC221D40B8BEBD13B3E70BB /* CaffeineControls */,
 				F301BCCDE589ADD36A89215F /* CaffeineToggleTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		221A3C9FC638B651280B1520 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				49679DF9D1601AC6BD6171D6 /* CaffeinateArguments.swift in Sources */,
-				71A23A0DC3438A6A1163DC9E /* CaffeineAppearance.swift in Sources */,
-				09F8F53DA9706D28113C8B09 /* CaffeineCommand.swift in Sources */,
-				FE8EC3B483A69ABD084DCC96 /* CaffeineControl.swift in Sources */,
-				CC88E295D5314A5F3FC9C884 /* CaffeineLegacyRestore.swift in Sources */,
-				AE256491CAA6FCA3C756B538 /* CaffeineRestartPolicy.swift in Sources */,
-				5D4356C1BCEA4C87C6E66CDC /* CaffeineSchedule.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C278F01907C38D8089C33C0F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -326,6 +258,8 @@
 				2F6711470E2407AA9CA54D95 /* CaffeineAppearanceTests.swift in Sources */,
 				FC3790012C375047DFF7C3C3 /* CaffeineCommand.swift in Sources */,
 				5A530F8039AA5B4E795E78A4 /* CaffeineCommandTests.swift in Sources */,
+				EF222A9134B960B325AD3E47 /* CaffeineDefaultsMigration.swift in Sources */,
+				BE6C6F1EEC1602236B7313E1 /* CaffeineDefaultsMigrationTests.swift in Sources */,
 				D26C29A976DB1E1762E54932 /* CaffeineLegacyRestore.swift in Sources */,
 				5DEEF0C1E5DB6824447CF84D /* CaffeineLegacyRestoreTests.swift in Sources */,
 				2A8995511B948DEBD82F399A /* CaffeineRestartPolicy.swift in Sources */,
@@ -335,6 +269,8 @@
 				8CB253DD21F367025BA5BAE1 /* CaffeineScheduleTests.swift in Sources */,
 				2C623CC22915B4088A223F26 /* ClamshellController.swift in Sources */,
 				ED234D238AB3F766FE4B3ADD /* ClamshellControllerTests.swift in Sources */,
+				3268BEA086C2427FBB355131 /* MenuBarSettings.swift in Sources */,
+				6D4B1BB37FBF1662BA3376B9 /* MenuBarSettingsModelTests.swift in Sources */,
 				37A400A544441F79613C1D36 /* ScheduleSettings.swift in Sources */,
 				EB5C6DDEE75FFC42B333A229 /* ScheduleSettingsModelTests.swift in Sources */,
 				71B383004E63078BD1C243C6 /* SingleInstanceLock.swift in Sources */,
@@ -349,10 +285,12 @@
 				2DA165F94D00636900DAFCAA /* CaffeinateArguments.swift in Sources */,
 				315FB7E8D277E380609BE19B /* CaffeineAppearance.swift in Sources */,
 				95746112A20AC6679E36C5F1 /* CaffeineCommand.swift in Sources */,
+				9C1AA3763A5E8883EA12187E /* CaffeineDefaultsMigration.swift in Sources */,
 				0F31BDEC1DF2EAF0274C86E8 /* CaffeineLegacyRestore.swift in Sources */,
 				B6AB5F942194FB079932A319 /* CaffeineRestartPolicy.swift in Sources */,
 				139B62460DA64F93E85BA750 /* CaffeineSchedule.swift in Sources */,
 				0C122DE89EF49D8D6D5076E4 /* ClamshellController.swift in Sources */,
+				22482C871E574756102BD907 /* MenuBarSettings.swift in Sources */,
 				CF8E252A8FE2414FC9CEFBB8 /* ScheduleSettings.swift in Sources */,
 				B201DCFC69B289FCD78941AE /* SingleInstanceLock.swift in Sources */,
 				04B579BFF154C81F712AE4FF /* main.swift in Sources */,
@@ -360,14 +298,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		3F6A7FA2AF13748067378454 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AAC221D40B8BEBD13B3E70BB /* CaffeineControls */;
-			targetProxy = AAA9214ADE0E2CA803C91624 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		232A8732F1D446EF434A135D /* Debug */ = {
@@ -386,25 +316,6 @@
 			};
 			name = Debug;
 		};
-		57D53148EA170BAF6FABF1DC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Control/CaffeineControls.entitlements;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Control/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle.Controls;
-				PRODUCT_NAME = CaffeineControls;
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
-		};
 		7A0980751A36C36F1A95478F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -417,7 +328,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle.MenuBarApp;
 				PRODUCT_NAME = "Caffeine Toggle";
 				SDKROOT = macosx;
 			};
@@ -565,25 +476,6 @@
 			};
 			name = Release;
 		};
-		DABB952B3E031F1533D21ABE /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Control/CaffeineControls.entitlements;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Control/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle.Controls;
-				PRODUCT_NAME = CaffeineControls;
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
 		F92A172E9C7C843770408A51 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -596,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kimiyashar.CaffeineToggle.MenuBarApp;
 				PRODUCT_NAME = "Caffeine Toggle";
 				SDKROOT = macosx;
 			};
@@ -628,15 +520,6 @@
 			buildConfigurations = (
 				232A8732F1D446EF434A135D /* Debug */,
 				AD2F2CDD26E2CD775AA57E82 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		F714B01124ADC3BA8CAAE04D /* Build configuration list for PBXNativeTarget "CaffeineControls" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DABB952B3E031F1533D21ABE /* Debug */,
-				57D53148EA170BAF6FABF1DC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

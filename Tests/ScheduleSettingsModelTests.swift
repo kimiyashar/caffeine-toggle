@@ -22,7 +22,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
     func testDisablingAllowsEmptyDaysAndEqualTimes() {
         let store = CaffeineScheduleStore(defaults: defaults)
         store.save(CaffeineSchedule(enabled: true, onMinutes: 9 * 60, offMinutes: 17 * 60))
-        let model = ScheduleSettingsModel(store: store)
+        let model = makeModel(store: store)
 
         model.enabled = false
         model.weekdays = []
@@ -37,7 +37,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
     }
 
     func testRepeatPresetsSelectExpectedDays() {
-        let model = ScheduleSettingsModel(store: CaffeineScheduleStore(defaults: defaults))
+        let model = makeModel(store: CaffeineScheduleStore(defaults: defaults))
 
         model.repeatPreset = .weekdays
         XCTAssertEqual(model.weekdays, Set([2, 3, 4, 5, 6]))
@@ -53,7 +53,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
         let store = CaffeineScheduleStore(defaults: defaults)
         store.save(CaffeineSchedule(enabled: true, onMinutes: 2 * 60 + 30, offMinutes: 4 * 60))
 
-        let model = ScheduleSettingsModel(store: store, calendarProvider: { newYork })
+        let model = makeModel(store: store, calendarProvider: { newYork })
         let onParts = newYork.dateComponents([.hour, .minute], from: model.onTime)
         XCTAssertEqual(onParts.hour, 2)
         XCTAssertEqual(onParts.minute, 30)
@@ -65,7 +65,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
     func testTwoHourSessionPersistsExactEndAndCanStop() {
         let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
         let store = CaffeineScheduleStore(defaults: defaults)
-        let model = ScheduleSettingsModel(store: store, now: { now })
+        let model = makeModel(store: store, now: { now })
         model.sessionMinutes = 120
 
         model.startSession()
@@ -82,7 +82,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
         activeCalendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
         let store = CaffeineScheduleStore(defaults: defaults)
         store.save(CaffeineSchedule(enabled: true, onMinutes: 9 * 60, offMinutes: 17 * 60))
-        let model = ScheduleSettingsModel(store: store, calendarProvider: { activeCalendar })
+        let model = makeModel(store: store, calendarProvider: { activeCalendar })
 
         XCTAssertEqual(activeCalendar.component(.hour, from: model.onTime), 9)
         activeCalendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
@@ -95,7 +95,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
     func testCalendarRepeatChoiceSavesYearlyRecurrence() {
         let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
         let store = CaffeineScheduleStore(defaults: defaults)
-        let model = ScheduleSettingsModel(store: store, now: { now })
+        let model = makeModel(store: store, now: { now })
 
         model.repeatChoice = .everyYear
         model.save()
@@ -111,7 +111,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
         let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
         let endDate = now.addingTimeInterval(30 * 24 * 60 * 60)
         let store = CaffeineScheduleStore(defaults: defaults)
-        let model = ScheduleSettingsModel(store: store, now: { now })
+        let model = makeModel(store: store, now: { now })
 
         model.repeatChoice = .custom
         model.customFrequency = .weekly
@@ -138,7 +138,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
             enabled: true,
             recurrence: CaffeineRecurrence(frequency: .monthly, anchorDate: originalAnchor)
         ))
-        let model = ScheduleSettingsModel(
+        let model = makeModel(
             store: store,
             calendarProvider: { calendar },
             now: { Date(timeIntervalSinceReferenceDate: 900_000) }
@@ -154,7 +154,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
 
     func testCustomNonWeeklyRecurrenceDoesNotRequireWeekdays() {
         let defaultsStore = CaffeineScheduleStore(defaults: defaults)
-        let model = ScheduleSettingsModel(store: defaultsStore)
+        let model = makeModel(store: defaultsStore)
         model.repeatChoice = .custom
         model.customFrequency = .monthly
         model.weekdays = []
@@ -169,7 +169,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
     func testCustomRecurrenceRejectsEndDateBeforeAnchor() {
         let now = Date(timeIntervalSinceReferenceDate: 900_000)
         let store = CaffeineScheduleStore(defaults: defaults)
-        let model = ScheduleSettingsModel(store: store, now: { now })
+        let model = makeModel(store: store, now: { now })
         model.repeatChoice = .custom
         model.customFrequency = .daily
         model.recurrenceEnd = .onDate
@@ -196,7 +196,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
                 calendar: calendar
             )
         ))
-        let model = ScheduleSettingsModel(store: store, calendarProvider: { calendar })
+        let model = makeModel(store: store, calendarProvider: { calendar })
 
         XCTAssertEqual(model.repeatChoice, .custom)
         model.save()
@@ -208,7 +208,7 @@ final class ScheduleSettingsModelTests: XCTestCase {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7))!
-        let model = ScheduleSettingsModel(
+        let model = makeModel(
             store: CaffeineScheduleStore(defaults: defaults),
             calendarProvider: { calendar },
             now: { now }
@@ -223,5 +223,18 @@ final class ScheduleSettingsModelTests: XCTestCase {
         XCTAssertEqual(model.customFrequency, .monthly)
         XCTAssertEqual(model.customInterval, 1)
         XCTAssertEqual(model.recurrenceEnd, .never)
+    }
+
+    private func makeModel(
+        store: CaffeineScheduleStore,
+        calendarProvider: @escaping () -> Calendar = { Calendar.current },
+        now: @escaping () -> Date = Date.init
+    ) -> ScheduleSettingsModel {
+        ScheduleSettingsModel(
+            store: store,
+            calendarProvider: calendarProvider,
+            now: now,
+            postNotification: { _ in }
+        )
     }
 }

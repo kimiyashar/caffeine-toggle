@@ -5,6 +5,7 @@ DerivedData/
 .derived/
 .derived-*/
 build/
+dist/
 evidence/
 spikes/
 *.log

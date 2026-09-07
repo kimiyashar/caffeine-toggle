@@ -1,7 +1,8 @@
 import AppKit
 import Foundation
 import IOKit
-import WidgetKit
+
+CaffeineDefaultsMigration.migrateIfNeeded()
 
 private enum SharedState {
     static let key = "isCaffeinated"
@@ -21,7 +22,6 @@ private enum SharedState {
         set {
             UserDefaults.standard.set(newValue, forKey: key)
             UserDefaults.standard.synchronize()
-            ControlCenter.shared.reloadControls(ofKind: CaffeineCommand.controlKind)
         }
     }
 
@@ -77,20 +77,23 @@ if CommandLine.arguments.count > 1 {
             exit(64)
         }
         let store = CaffeineScheduleStore()
-        store.sessionEndDate = Date().addingTimeInterval(Double(minutes) * 60)
+        store.startTimer(duration: Double(minutes) * 60, at: Date())
         store.manualOverrideUntil = nil
         SharedState.post(SharedState.sessionChanged)
         print("session started for \(minutes) minute\(minutes == 1 ? "" : "s")")
         exit(0)
     case "--stop-session":
-        CaffeineScheduleStore().sessionEndDate = nil
+        CaffeineScheduleStore().stopTimer()
         SharedState.post(SharedState.sessionChanged)
         print("session stopped")
         exit(0)
     case "--session-status":
-        if let endDate = CaffeineScheduleStore().sessionEndDate, endDate > Date() {
+        switch CaffeineScheduleStore().timerSession(at: Date()) {
+        case let .running(endDate):
             print("active until \(endDate.formatted(date: .abbreviated, time: .standard))")
-        } else {
+        case let .paused(remaining):
+            print("paused with \(TimerCountdownFormatter.string(remainingSeconds: remaining)) remaining")
+        case .inactive:
             print("inactive")
         }
         exit(0)
@@ -151,9 +154,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var restartPolicy = CaffeineRestartPolicy()
     private var legacyRestoreBuffer = CaffeineLegacyRestoreBuffer()
     private let scheduleStore = CaffeineScheduleStore()
-    private lazy var scheduleWindowController = ScheduleWindowController(store: scheduleStore)
+    private lazy var menuBarController = MenuBarController(
+        isCaffeinated: SharedState.isCaffeinated,
+        setState: { [weak self] enabled in self?.handleManualStateChange(to: enabled) },
+        post: { notificationName in
+            SharedState.post(CFNotificationName(notificationName as CFString))
+        }
+    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        _ = menuBarController
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         let callback: CFNotificationCallback = { _, observer, name, _, _ in
             guard let observer else { return }
@@ -194,7 +204,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         if SharedState.hasPendingShowRequest {
-            scheduleWindowController.present()
+            menuBarController.showPopover()
             SharedState.hasPendingShowRequest = false
         }
         reconcileAutomationWithCurrentTime()
@@ -220,7 +230,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        scheduleWindowController.present()
+        menuBarController.showPopover()
         return true
     }
 
@@ -270,7 +280,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case CaffeineCommand.showScheduleRestoringOffNotification:
             restoreStateAfterDoubleClickAndShow(enabled: false)
         case CaffeineCommand.showScheduleNotification:
-            scheduleWindowController.present()
+            menuBarController.showPopover()
             SharedState.hasPendingShowRequest = false
         default:
             handleManualStateChange(to: SharedState.isCaffeinated)
@@ -280,7 +290,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func restoreStateAfterDoubleClickAndShow(enabled: Bool) {
         let now = Date()
         guard let snapshot = legacyRestoreBuffer.consume(restoring: enabled, at: now) else {
-            scheduleWindowController.present()
+            menuBarController.showPopover()
             SharedState.hasPendingShowRequest = false
             return
         }
@@ -290,7 +300,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         reconcileAutomationWithCurrentTime(now: now)
         applyDesiredState()
         scheduleNextTransition(now: now)
-        scheduleWindowController.present()
+        menuBarController.showPopover()
         SharedState.hasPendingShowRequest = false
     }
 
@@ -301,11 +311,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             manualOverrideUntil: scheduleStore.manualOverrideUntil,
             capturedAt: now
         ))
+        if !enabled, scheduleStore.pauseTimer(at: now) {
+            SharedState.isCaffeinated = false
+            scheduleStore.manualOverrideUntil = nil
+            applyDesiredState()
+            scheduleNextTransition(now: now)
+            return
+        }
+        if enabled, scheduleStore.resumeTimer(at: now) {
+            SharedState.isCaffeinated = true
+            scheduleStore.manualOverrideUntil = nil
+            applyDesiredState()
+            scheduleNextTransition(now: now)
+            return
+        }
         SharedState.isCaffeinated = enabled
-        scheduleStore.sessionEndDate = nil
         let schedule = scheduleStore.load()
         scheduleStore.manualOverrideUntil = schedule.nextTransition(after: now)?.date
-        scheduleWindowController.reloadIfVisible()
         applyDesiredState()
         scheduleNextTransition(now: now)
     }
@@ -313,7 +335,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func systemClockChanged() {
         let now = Date()
         legacyRestoreBuffer.invalidate()
-        scheduleWindowController.reloadIfVisible()
         let schedule = scheduleStore.load()
         scheduleStore.manualOverrideUntil = schedule.rebasedManualOverride(
             scheduleStore.manualOverrideUntil,
@@ -326,7 +347,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func scheduleTimerFired() {
         reconcileAutomationWithCurrentTime()
-        scheduleWindowController.reloadIfVisible()
         applyDesiredState()
         scheduleNextTransition()
     }
@@ -337,13 +357,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         turnOffIfNoAutomation: Bool = false
     ) {
         var sessionExpired = false
-        if let sessionEndDate = scheduleStore.sessionEndDate {
-            if sessionEndDate > now {
-                SharedState.isCaffeinated = true
-                return
+        switch scheduleStore.timerSession(at: now) {
+        case .running:
+            SharedState.isCaffeinated = true
+            return
+        case .paused:
+            SharedState.isCaffeinated = false
+            return
+        case .inactive:
+            if scheduleStore.sessionEndDate != nil {
+                sessionExpired = true
+                scheduleStore.stopTimer()
             }
-            scheduleStore.sessionEndDate = nil
-            sessionExpired = true
         }
 
         if respectingManualOverride,
@@ -353,7 +378,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         scheduleStore.manualOverrideUntil = nil
 
-        let schedule = scheduleStore.load()
+        var schedule = scheduleStore.load()
+        let completedSchedule = schedule.disablingCompletedOneTime(at: now)
+        if completedSchedule != schedule {
+            schedule = completedSchedule
+            scheduleStore.save(schedule)
+            SharedState.isCaffeinated = false
+        }
         if sessionExpired || turnOffIfNoAutomation {
             SharedState.isCaffeinated = false
             scheduleStore.manualOverrideUntil = schedule.nextTransition(after: now)?.date
@@ -397,6 +428,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             stopCaffeinating()
         }
+        menuBarController.refresh(isCaffeinated: SharedState.isCaffeinated)
     }
 
     private func startCaffeinating() {
@@ -405,6 +437,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard clamshellResult == kIOReturnSuccess else {
             NSLog("Caffeine Toggle could not disable clamshell sleep: 0x%08x", clamshellResult)
             SharedState.isCaffeinated = false
+            applyDesiredState()
             return
         }
 
@@ -421,7 +454,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard self.restartPolicy.shouldRestart() else {
                     NSLog("Caffeine: caffeinate exited repeatedly; restoring normal sleep")
                     SharedState.isCaffeinated = false
-                    _ = ClamshellController.setSleepDisabled(false)
+                    self.applyDesiredState()
                     return
                 }
                 NSLog("Caffeine: caffeinate exited unexpectedly; restarting")
@@ -437,6 +470,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSLog("Caffeine Toggle could not start caffeinate: %@", error.localizedDescription)
             ClamshellController.setSleepDisabled(false)
             SharedState.isCaffeinated = false
+            applyDesiredState()
         }
     }
 

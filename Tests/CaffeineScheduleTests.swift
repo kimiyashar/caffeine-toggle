@@ -215,6 +215,108 @@ final class CaffeineScheduleTests: XCTestCase {
         )
     }
 
+    func testCustomWeekdaysCanUseIndependentTimeWindows() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            weekdayWindows: [
+                2: CaffeineDayWindow(onMinutes: 9 * 60, offMinutes: 12 * 60),
+                4: CaffeineDayWindow(onMinutes: 14 * 60, offMinutes: 18 * 60)
+            ]
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(10, 0, year: 2026, month: 9, day: 7), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(15, 0, year: 2026, month: 9, day: 7), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(15, 0, year: 2026, month: 9, day: 9), calendar: calendar))
+    }
+
+    func testOverlappingCustomWindowsStayOnUntilTheUnionEnds() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            weekdayWindows: [
+                2: CaffeineDayWindow(onMinutes: 22 * 60, offMinutes: 6 * 60),
+                3: CaffeineDayWindow(onMinutes: 5 * 60, offMinutes: 8 * 60),
+            ]
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(6, 30, year: 2026, month: 9, day: 8), calendar: calendar))
+        XCTAssertEqual(
+            schedule.nextTransition(after: date(5, 30, year: 2026, month: 9, day: 8), calendar: calendar),
+            CaffeineSchedule.Transition(date: date(8, 0, year: 2026, month: 9, day: 8), turnsOn: false)
+        )
+    }
+
+    func testScheduleModesAreMutuallyExclusive() {
+        let oneTime = CaffeineOneTimeWindow(
+            startDate: date(10, 0, year: 2026, month: 9, day: 9),
+            endDate: date(11, 0, year: 2026, month: 9, day: 9)
+        )
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            recurrence: CaffeineRecurrence(frequency: .daily, anchorDate: date(0, 0, year: 2026, month: 9, day: 1)),
+            weekdayWindows: [2: CaffeineDayWindow(onMinutes: 600, offMinutes: 660)],
+            oneTimeWindow: oneTime
+        )
+
+        XCTAssertEqual(schedule.oneTimeWindow, oneTime)
+        XCTAssertNil(schedule.recurrence)
+        XCTAssertTrue(schedule.weekdayWindows.isEmpty)
+        XCTAssertTrue(schedule.weekdays.isEmpty)
+    }
+
+    func testDayWindowValidatesDecodedMinuteBounds() throws {
+        let decoded = try JSONDecoder().decode(
+            CaffeineDayWindow.self,
+            from: Data(#"{"onMinutes":-20,"offMinutes":2000}"#.utf8)
+        )
+
+        XCTAssertEqual(decoded, CaffeineDayWindow(onMinutes: 0, offMinutes: 1_439))
+    }
+
+    func testCustomWeekdayOvernightWindowBelongsToStartDay() {
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            weekdayWindows: [2: CaffeineDayWindow(onMinutes: 22 * 60, offMinutes: 6 * 60)]
+        )
+
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: date(5, 0, year: 2026, month: 9, day: 8), calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: date(6, 0, year: 2026, month: 9, day: 8), calendar: calendar))
+    }
+
+    func testOneTimeWindowUsesExactStartAndEnd() {
+        let start = date(10, 0, year: 2026, month: 9, day: 10)
+        let end = date(13, 30, year: 2026, month: 9, day: 10)
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            oneTimeWindow: CaffeineOneTimeWindow(startDate: start, endDate: end)
+        )
+
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: start.addingTimeInterval(-1), calendar: calendar))
+        XCTAssertTrue(schedule.shouldBeCaffeinated(at: start, calendar: calendar))
+        XCTAssertFalse(schedule.shouldBeCaffeinated(at: end, calendar: calendar))
+        XCTAssertEqual(
+            schedule.nextTransition(after: start.addingTimeInterval(-1), calendar: calendar),
+            CaffeineSchedule.Transition(date: start, turnsOn: true)
+        )
+        XCTAssertEqual(
+            schedule.nextTransition(after: start, calendar: calendar),
+            CaffeineSchedule.Transition(date: end, turnsOn: false)
+        )
+    }
+
+    func testCompletedOneTimeScheduleDisablesItself() {
+        let start = date(10, 0, year: 2026, month: 9, day: 10)
+        let end = date(11, 0, year: 2026, month: 9, day: 10)
+        let schedule = CaffeineSchedule(
+            enabled: true,
+            oneTimeWindow: CaffeineOneTimeWindow(startDate: start, endDate: end)
+        )
+
+        XCTAssertTrue(schedule.disablingCompletedOneTime(at: end.addingTimeInterval(-1)).enabled)
+        let completed = schedule.disablingCompletedOneTime(at: end)
+        XCTAssertFalse(completed.enabled)
+        XCTAssertEqual(completed.oneTimeWindow, schedule.oneTimeWindow)
+    }
+
     func testEmptyCustomDaySelectionIsInvalid() {
         let schedule = CaffeineSchedule(enabled: true, onMinutes: 9 * 60, offMinutes: 17 * 60, weekdays: [])
 
