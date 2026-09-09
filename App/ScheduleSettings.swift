@@ -62,16 +62,27 @@ final class ScheduleSettingsModel: ObservableObject {
     private let store: CaffeineScheduleStore
     private let calendarProvider: () -> Calendar
     private let now: () -> Date
+    private let postNotification: (String) -> Void
     private var recurrenceAnchorDate: Date
 
     init(
         store: CaffeineScheduleStore = CaffeineScheduleStore(),
         calendarProvider: @escaping () -> Calendar = { Calendar.current },
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        postNotification: @escaping (String) -> Void = { notificationName in
+            CFNotificationCenterPostNotification(
+                CFNotificationCenterGetDarwinNotifyCenter(),
+                CFNotificationName(notificationName as CFString),
+                nil,
+                nil,
+                true
+            )
+        }
     ) {
         self.store = store
         self.calendarProvider = calendarProvider
         self.now = now
+        self.postNotification = postNotification
         let calendar = calendarProvider()
         let schedule = store.load()
         enabled = schedule.enabled
@@ -105,7 +116,7 @@ final class ScheduleSettingsModel: ObservableObject {
     }
 
     var scheduleSummary: String {
-        guard enabled else { return "Schedule is off. The Control Center toggle stays fully manual." }
+        guard enabled else { return "Schedule is off. The menu-bar toggle stays fully manual." }
         guard !weekdays.isEmpty else { return "Choose at least one day." }
         let days = Self.daysSummary(weekdays)
         return "\(days): on at \(onTime.formatted(date: .omitted, time: .shortened)), off at \(offTime.formatted(date: .omitted, time: .shortened))."
@@ -117,16 +128,15 @@ final class ScheduleSettingsModel: ObservableObject {
     }
 
     func startSession() {
-        let endDate = now().addingTimeInterval(Double(sessionMinutes) * 60)
-        store.sessionEndDate = endDate
+        store.startTimer(duration: Double(sessionMinutes) * 60, at: now())
         store.manualOverrideUntil = nil
-        sessionEndDate = endDate
+        sessionEndDate = store.sessionEndDate
         post(CaffeineCommand.sessionChangedNotification)
         message = "Session started. Caffeine will turn off automatically."
     }
 
     func stopSession() {
-        store.sessionEndDate = nil
+        store.stopTimer()
         sessionEndDate = nil
         post(CaffeineCommand.sessionChangedNotification)
         message = "Session stopped."
@@ -225,13 +235,7 @@ final class ScheduleSettingsModel: ObservableObject {
     }
 
     private func post(_ notificationName: String) {
-        CFNotificationCenterPostNotification(
-            CFNotificationCenterGetDarwinNotifyCenter(),
-            CFNotificationName(notificationName as CFString),
-            nil,
-            nil,
-            true
-        )
+        postNotification(notificationName)
     }
 
     private static func daysSummary(_ days: Set<Int>) -> String {
@@ -439,7 +443,7 @@ struct ScheduleSettingsView: View {
 
             Spacer()
 
-            Text("A manual OFF toggle cancels the timer immediately.")
+            Text("A manual OFF toggle pauses the timer; turning Caffeine on resumes it.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

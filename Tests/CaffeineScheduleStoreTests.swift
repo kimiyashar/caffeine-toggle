@@ -71,6 +71,60 @@ final class CaffeineScheduleStoreTests: XCTestCase {
         XCTAssertNil(store.sessionEndDate)
     }
 
+    func testRunningTimerCanPauseAndResumeWithoutLosingRemainingTime() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let start = Date(timeIntervalSinceReferenceDate: 10_000)
+        store.startTimer(duration: 2 * 60 * 60, at: start)
+
+        XCTAssertEqual(
+            store.timerSession(at: start),
+            .running(endDate: start.addingTimeInterval(2 * 60 * 60))
+        )
+
+        let pausedAt = start.addingTimeInterval(61)
+        XCTAssertTrue(store.pauseTimer(at: pausedAt))
+        XCTAssertEqual(store.timerSession(at: pausedAt), .paused(remaining: 7_139))
+        XCTAssertNil(store.sessionEndDate)
+
+        let resumedAt = start.addingTimeInterval(600)
+        XCTAssertTrue(store.resumeTimer(at: resumedAt))
+        XCTAssertEqual(
+            store.timerSession(at: resumedAt),
+            .running(endDate: resumedAt.addingTimeInterval(7_139))
+        )
+        XCTAssertNil(store.pausedSessionRemaining)
+    }
+
+    func testTimerDurationPersistsAcrossPauseAndResumeAndClearsOnStop() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let start = Date(timeIntervalSinceReferenceDate: 30_000)
+
+        store.startTimer(duration: 317, at: start)
+        XCTAssertEqual(store.sessionDuration, 317)
+
+        XCTAssertTrue(store.pauseTimer(at: start.addingTimeInterval(17)))
+        XCTAssertEqual(store.sessionDuration, 317)
+
+        XCTAssertTrue(store.resumeTimer(at: start.addingTimeInterval(100)))
+        XCTAssertEqual(store.sessionDuration, 317)
+
+        store.stopTimer()
+        XCTAssertNil(store.sessionDuration)
+    }
+
+    func testStoppingPausedTimerClearsTheSession() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let now = Date(timeIntervalSinceReferenceDate: 20_000)
+        store.startTimer(duration: 600, at: now)
+        XCTAssertTrue(store.pauseTimer(at: now.addingTimeInterval(25)))
+
+        store.stopTimer()
+
+        XCTAssertEqual(store.timerSession(at: now), .inactive)
+        XCTAssertNil(store.sessionEndDate)
+        XCTAssertNil(store.pausedSessionRemaining)
+    }
+
     func testRoundTripsAdvancedRecurrence() {
         let store = CaffeineScheduleStore(defaults: defaults)
         let recurrence = CaffeineRecurrence(
@@ -86,6 +140,36 @@ final class CaffeineScheduleStoreTests: XCTestCase {
             onMinutes: 8 * 60,
             offMinutes: 18 * 60,
             recurrence: recurrence
+        )
+
+        store.save(expected)
+
+        XCTAssertEqual(store.load(), expected)
+    }
+
+    func testRoundTripsIndependentWeekdayWindows() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let expected = CaffeineSchedule(
+            enabled: true,
+            weekdayWindows: [
+                2: CaffeineDayWindow(onMinutes: 8 * 60, offMinutes: 11 * 60),
+                6: CaffeineDayWindow(onMinutes: 19 * 60, offMinutes: 2 * 60)
+            ]
+        )
+
+        store.save(expected)
+
+        XCTAssertEqual(store.load(), expected)
+    }
+
+    func testRoundTripsOneTimeWindow() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let expected = CaffeineSchedule(
+            enabled: true,
+            oneTimeWindow: CaffeineOneTimeWindow(
+                startDate: Date(timeIntervalSinceReferenceDate: 123_000),
+                endDate: Date(timeIntervalSinceReferenceDate: 127_000)
+            )
         )
 
         store.save(expected)

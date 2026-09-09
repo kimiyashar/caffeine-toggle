@@ -1,34 +1,83 @@
 # Caffeine Toggle
 
-A native macOS Control Center toggle with timers and repeating schedules that keeps a Mac awake and optionally prevents lid-close sleep.
+A tiny native macOS menu-bar app that keeps your Mac awake—with a visual Timer and flexible schedules.
 
-**Website:** [kimiyashar.github.io/caffeine-toggle](https://kimiyashar.github.io/caffeine-toggle/)
+<p align="center">
+  <img src="docs/assets/ui/timer-full.png" width="520" alt="Caffeine Toggle 3.0 with its latte-brown switch and coffee-cup countdown timer">
+</p>
 
-- Single-click the mug: toggle immediately
-- Add the separate **Caffeine Timer & Repeat** control to open scheduling reliably
-- Timer: keep Caffeine on for 30 minutes, 1, 2, 4, or 8 hours, then turn off automatically
-- Repeat: run daily, weekly, monthly, yearly, or on custom intervals and weekday combinations
-- Calendar-style Custom recurrence can end never, on a date, or after a chosen number of occurrences
-- Choose separate on and off times; overnight schedules are supported
-- Empty mug: normal sleep behavior
-- Filled mug: prevents idle sleep and disables clamshell sleep
-- Native WidgetKit Control Center controls
-- Background AppKit helper owns timers, repeating schedules, and the `caffeinate` process
+<p align="center">
+  <a href="https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.zip"><strong>⬇ Download Caffeine Toggle 3.0</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://kimiyashar.github.io/caffeine-toggle/">Website</a>
+</p>
 
-![Caffeine Timer window with two hours selected](docs/assets/schedule-window.png)
+## Download and install
+
+**You do not need Xcode or Terminal.**
+
+1. **[Download Caffeine Toggle 3.0](https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.zip).**
+2. Open the downloaded ZIP, then drag **Caffeine Toggle** into your **Applications** folder.
+3. The first time only, Control-click **Caffeine Toggle** in Applications and choose **Open**, then **Open** again.
+
+If macOS still blocks the app, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Caffeine Toggle. This release is signed with an Apple Development certificate but is not yet notarized for automatic Gatekeeper approval.
+
+**Requires an Apple Silicon Mac running macOS 26 or later.**
+
+## Use it
+
+- **Left-click the menu-bar mug:** turn Caffeine on or off immediately.
+- **Right-click or two-finger click the mug:** open the attached Timer and Schedule panel.
+- **Filled menu-bar mug:** Caffeine is on; idle sleep is prevented.
+- **Empty menu-bar mug:** Caffeine is off; normal sleep behavior is restored.
+
+### In the menu bar
+
+The mug sits directly beside your other macOS system controls. Caffeine Toggle does not install a separate Control Center extension.
+
+| Caffeine ON | Caffeine OFF |
+|---|---|
+| ![Filled Caffeine Toggle mug in the macOS menu bar](docs/assets/ui/menu-bar-on.png) | ![Empty Caffeine Toggle mug in the macOS menu bar](docs/assets/ui/menu-bar-off.png) |
+
+### The coffee-cup Timer
+
+<p align="center">
+  <img src="docs/assets/ui/timer-full.png" width="430" alt="A running two-hour timer shown as a full coffee cup with the remaining duration beneath it">
+  &nbsp;&nbsp;
+  <img src="docs/assets/ui/timer-paused.png" width="430" alt="A paused Timer with its countdown and coffee level frozen">
+</p>
+
+Every Timer begins with a full cup and drains toward empty relative to that Timer's own duration. A 10-minute Timer and a 7-day Timer both start completely full, look half full halfway through, and end completely empty. Turning Caffeine off pauses both the countdown and the coffee level; turning it back on resumes them.
+
+### Four ways to schedule
+
+<p align="center">
+  <img src="docs/assets/ui/schedule-options.png" width="520" alt="Schedule picker with One Time, Every Day, Weekdays, and Custom options">
+</p>
+
+- **One Time** — one specific start and stop.
+- **Every Day** — the same window daily.
+- **Weekdays** — Monday through Friday.
+- **Custom** — independent time windows for whichever weekdays you choose.
+
+Overnight windows are supported. Manual changes always work; the next scheduled boundary takes over automatically.
+
+## UI gallery
+
+| Timer running | Timer paused | Schedule modes |
+|---|---|---|
+| ![Coffee cup countdown](docs/assets/ui/timer-full.png) | ![Paused coffee cup Timer](docs/assets/ui/timer-paused.png) | ![Four Schedule modes](docs/assets/ui/schedule-options.png) |
+
+## Start automatically
+
+Open **System Settings → General → Login Items**, click **+**, and add **Caffeine Toggle**.
 
 > [!WARNING]
-> Caffeinated mode is designed to keep the Mac running with its lid closed, but physical lid-close behavior has not been verified on every Mac. Keep it plugged in on a hard, open, ventilated surface—never inside a bag, sleeve, bed, or other poorly ventilated space. CPU/GPU-heavy work can generate substantial heat.
+> An awake Mac can generate heat. Keep it plugged in on a hard, open, ventilated surface—never in a bag, sleeve, bed, or other enclosed space. The closed-lid behavior uses a private macOS interface and should be tested on your own Mac before you rely on it.
 
-## Requirements
+## Build from source
 
-- macOS 26 or later
-- Apple Silicon Mac
-- Xcode 26 or later
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
-- An Apple Development signing team
-
-## Build
+Developers need Xcode 26 or later, [XcodeGen](https://github.com/yonaskolb/XcodeGen), and an Apple Development signing team. Replace the development team and bundle identifiers in `project.yml`, then run:
 
 ```sh
 xcodegen generate
@@ -40,26 +89,9 @@ xcodebuild \
   build
 ```
 
-Before building, replace the development team and bundle identifiers in `project.yml` with values for your Apple Developer account.
-
-The built app is located at:
-
-```text
-.derived/Build/Products/Release/Caffeine Toggle.app
-```
-
-Copy it to `/Applications` or `~/Applications`, launch it, then open **Control Center → Edit Controls** and search for **Caffeine**. Add both controls: **Caffeine** is the immediate ON/OFF toggle, while **Caffeine Timer & Repeat** opens scheduling.
-
-- Single-click the mug to toggle Caffeine immediately.
-- Click the separate **Caffeine Timer & Repeat** control to open the scheduling window. macOS reserves secondary interaction on Control Center controls for its own edit/remove interface, so the toggle cannot reliably support double-click actions.
-- Choose **Timer** for a one-off session, or **Repeat** for daily, weekly, monthly, yearly, or **Custom…** recurrence with intervals, weekdays, and end conditions.
-- Manual changes remain available; the next scheduled boundary takes over automatically.
-
-For automatic startup, add Caffeine Toggle under **System Settings → General → Login Items**.
+The app will be at `.derived/Build/Products/Release/Caffeine Toggle.app`.
 
 ## Command interface
-
-The app executable also supports:
 
 ```sh
 CaffeineToggle --on
@@ -75,22 +107,11 @@ CaffeineToggle --disable-schedule
 CaffeineToggle --show-schedule
 ```
 
-## How it works
-
-The helper launches:
+The app owns exactly one PID-bound child process:
 
 ```text
-/usr/bin/caffeinate -d -i -m -s -w <helper-pid>
+/usr/bin/caffeinate -d -i -m -s -w <app-pid>
 ```
-
-It also calls the private IOKit root-domain selector used to change clamshell sleep behavior. Turning the control off restores normal clamshell sleep before terminating `caffeinate`. The helper schedules the next selected on/off boundary with a local timer and recalculates after wake, clock changes, time-zone changes, or helper restarts so missed transitions do not leave stale state.
-
-## Important limitations
-
-- The clamshell API is private and unsupported by Apple. A macOS update may change or break it.
-- The app must remain running for the Control Center toggle and schedules to control the helper.
-- Physical lid-close behavior should be tested on each target Mac before relying on it.
-- This is not intended for Mac App Store distribution.
 
 ## Tests
 

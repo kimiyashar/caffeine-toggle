@@ -289,6 +289,44 @@ struct CaffeineRecurrence: Equatable, Codable {
     }
 }
 
+struct CaffeineDayWindow: Equatable, Codable {
+    var onMinutes: Int
+    var offMinutes: Int
+
+    init(onMinutes: Int, offMinutes: Int) {
+        self.onMinutes = min(max(onMinutes, 0), 1_439)
+        self.offMinutes = min(max(offMinutes, 0), 1_439)
+    }
+
+    var isValid: Bool { onMinutes != offMinutes }
+
+    private enum CodingKeys: String, CodingKey {
+        case onMinutes
+        case offMinutes
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            onMinutes: try values.decode(Int.self, forKey: .onMinutes),
+            offMinutes: try values.decode(Int.self, forKey: .offMinutes)
+        )
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(onMinutes, forKey: .onMinutes)
+        try values.encode(offMinutes, forKey: .offMinutes)
+    }
+}
+
+struct CaffeineOneTimeWindow: Equatable, Codable {
+    var startDate: Date
+    var endDate: Date
+
+    var isValid: Bool { endDate > startDate }
+}
+
 struct CaffeineSchedule: Equatable {
     static let defaultOnMinutes = 9 * 60
     static let defaultOffMinutes = 17 * 60
@@ -299,19 +337,38 @@ struct CaffeineSchedule: Equatable {
     var offMinutes: Int
     var weekdays: Set<Int>
     var recurrence: CaffeineRecurrence?
+    var weekdayWindows: [Int: CaffeineDayWindow]
+    var oneTimeWindow: CaffeineOneTimeWindow?
 
     init(
         enabled: Bool = false,
         onMinutes: Int = defaultOnMinutes,
         offMinutes: Int = defaultOffMinutes,
         weekdays: Set<Int> = everyDay,
-        recurrence: CaffeineRecurrence? = nil
+        recurrence: CaffeineRecurrence? = nil,
+        weekdayWindows: [Int: CaffeineDayWindow] = [:],
+        oneTimeWindow: CaffeineOneTimeWindow? = nil
     ) {
         self.enabled = enabled
         self.onMinutes = Self.normalized(onMinutes)
         self.offMinutes = Self.normalized(offMinutes)
-        self.weekdays = weekdays.intersection(Self.everyDay)
-        self.recurrence = recurrence
+        let validWindows = weekdayWindows.filter { Self.everyDay.contains($0.key) }
+        if let oneTimeWindow {
+            self.weekdays = []
+            self.recurrence = nil
+            self.weekdayWindows = [:]
+            self.oneTimeWindow = oneTimeWindow
+        } else if !validWindows.isEmpty {
+            self.weekdays = Set(validWindows.keys)
+            self.recurrence = nil
+            self.weekdayWindows = validWindows
+            self.oneTimeWindow = nil
+        } else {
+            self.weekdays = weekdays.intersection(Self.everyDay)
+            self.recurrence = recurrence
+            self.weekdayWindows = [:]
+            self.oneTimeWindow = nil
+        }
     }
 
     struct Transition: Equatable {
@@ -320,11 +377,26 @@ struct CaffeineSchedule: Equatable {
     }
 
     var isValid: Bool {
-        onMinutes != offMinutes && (recurrence != nil || !weekdays.isEmpty)
+        if let oneTimeWindow { return oneTimeWindow.isValid }
+        if !weekdayWindows.isEmpty { return weekdayWindows.values.allSatisfy(\.isValid) }
+        return onMinutes != offMinutes && (recurrence != nil || !weekdays.isEmpty)
+    }
+
+    func disablingCompletedOneTime(at date: Date) -> CaffeineSchedule {
+        guard enabled, let oneTimeWindow, date >= oneTimeWindow.endDate else { return self }
+        var completed = self
+        completed.enabled = false
+        return completed
     }
 
     func shouldBeCaffeinated(at date: Date, calendar: Calendar = .current) -> Bool {
         guard enabled, isValid else { return false }
+        if let oneTimeWindow {
+            return date >= oneTimeWindow.startDate && date < oneTimeWindow.endDate
+        }
+        if !weekdayWindows.isEmpty {
+            return customWindowsAreActive(at: date, calendar: calendar)
+        }
         let candidates = transitions(relativeTo: date, dayOffsets: -8...0, calendar: calendar)
             .filter { $0.date <= date }
         guard let mostRecentDate = candidates.map(\.date).max() else { return false }
@@ -344,6 +416,31 @@ struct CaffeineSchedule: Equatable {
 
     func nextTransition(after date: Date, calendar: Calendar = .current) -> Transition? {
         guard enabled, isValid else { return nil }
+        if let oneTimeWindow {
+            if date < oneTimeWindow.startDate {
+                return Transition(date: oneTimeWindow.startDate, turnsOn: true)
+            }
+            if date < oneTimeWindow.endDate {
+                return Transition(date: oneTimeWindow.endDate, turnsOn: false)
+            }
+            return nil
+        }
+        if !weekdayWindows.isEmpty {
+            let boundaries = Set(
+                transitions(relativeTo: date, dayOffsets: -1...8, calendar: calendar)
+                    .map(\.date)
+                    .filter { $0 > date }
+            ).sorted()
+            var state = customWindowsAreActive(at: date, calendar: calendar)
+            for boundary in boundaries {
+                let nextState = customWindowsAreActive(at: boundary, calendar: calendar)
+                if nextState != state {
+                    return Transition(date: boundary, turnsOn: nextState)
+                }
+                state = nextState
+            }
+            return nil
+        }
         if let recurrence {
             let referenceDay = calendar.startOfDay(for: date)
             var candidates: [Transition] = []
@@ -383,7 +480,8 @@ struct CaffeineSchedule: Equatable {
         for offset in dayOffsets {
             guard let startDay = calendar.date(byAdding: .day, value: offset, to: referenceDay) else { continue }
             let weekday = calendar.component(.weekday, from: startDay)
-            let isIncluded = recurrence?.includes(startDay, calendar: calendar) ?? weekdays.contains(weekday)
+            let isIncluded = recurrence?.includes(startDay, calendar: calendar)
+                ?? (weekdayWindows.isEmpty ? weekdays.contains(weekday) : weekdayWindows[weekday] != nil)
             guard isIncluded else { continue }
             result += transitions(for: startDay, calendar: calendar)
         }
@@ -391,21 +489,39 @@ struct CaffeineSchedule: Equatable {
     }
 
     private func transitions(for startDay: Date, calendar: Calendar) -> [Transition] {
+        let weekday = calendar.component(.weekday, from: startDay)
+        let window = weekdayWindows[weekday]
+            ?? CaffeineDayWindow(onMinutes: onMinutes, offMinutes: offMinutes)
         var result: [Transition] = []
-        if let onDate = wallClockDate(minutes: onMinutes, on: startDay, calendar: calendar) {
+        if let onDate = wallClockDate(minutes: window.onMinutes, on: startDay, calendar: calendar) {
             result.append(Transition(date: onDate, turnsOn: true))
         }
         let offDay: Date
-        if onMinutes < offMinutes {
+        if window.onMinutes < window.offMinutes {
             offDay = startDay
         } else {
             guard let nextDay = calendar.date(byAdding: .day, value: 1, to: startDay) else { return result }
             offDay = nextDay
         }
-        if let offDate = wallClockDate(minutes: offMinutes, on: offDay, calendar: calendar) {
+        if let offDate = wallClockDate(minutes: window.offMinutes, on: offDay, calendar: calendar) {
             result.append(Transition(date: offDate, turnsOn: false))
         }
         return result
+    }
+
+    private func customWindowsAreActive(at date: Date, calendar: Calendar) -> Bool {
+        let referenceDay = calendar.startOfDay(for: date)
+        for offset in -1...0 {
+            guard let startDay = calendar.date(byAdding: .day, value: offset, to: referenceDay) else { continue }
+            let weekday = calendar.component(.weekday, from: startDay)
+            guard weekdayWindows[weekday] != nil else { continue }
+            let boundaries = transitions(for: startDay, calendar: calendar)
+            guard boundaries.count == 2 else { continue }
+            if date >= boundaries[0].date && date < boundaries[1].date {
+                return true
+            }
+        }
+        return false
     }
 
     private func wallClockDate(minutes: Int, on day: Date, calendar: Calendar) -> Date? {
@@ -437,6 +553,12 @@ struct CaffeineSchedule: Equatable {
     }
 }
 
+enum CaffeineTimerSession: Equatable {
+    case inactive
+    case running(endDate: Date)
+    case paused(remaining: TimeInterval)
+}
+
 final class CaffeineScheduleStore {
     private enum Key {
         static let enabled = "schedule.enabled"
@@ -444,8 +566,13 @@ final class CaffeineScheduleStore {
         static let offMinutes = "schedule.offMinutes"
         static let weekdaysMask = "schedule.weekdaysMask"
         static let recurrence = "schedule.recurrence"
+        static let weekdayWindows = "schedule.weekdayWindows"
+        static let oneTimeWindow = "schedule.oneTimeWindow"
         static let manualOverrideUntil = "schedule.manualOverrideUntil"
         static let sessionEndDate = "session.endDate"
+        static let pausedSessionRemaining = "session.pausedRemaining"
+        static let sessionDuration = "session.duration"
+        static let preferredTimerMinutes = "timer.preferredMinutes"
     }
 
     private let defaults: UserDefaults
@@ -464,18 +591,109 @@ final class CaffeineScheduleStore {
         set { defaults.set(newValue, forKey: Key.sessionEndDate) }
     }
 
+    var pausedSessionRemaining: TimeInterval? {
+        get {
+            guard let value = defaults.object(forKey: Key.pausedSessionRemaining) as? Double,
+                  value.isFinite,
+                  value > 0 else { return nil }
+            return value
+        }
+        set {
+            if let newValue, newValue.isFinite, newValue > 0 {
+                defaults.set(newValue, forKey: Key.pausedSessionRemaining)
+            } else {
+                defaults.removeObject(forKey: Key.pausedSessionRemaining)
+            }
+        }
+    }
+
+    var sessionDuration: TimeInterval? {
+        get {
+            guard let value = defaults.object(forKey: Key.sessionDuration) as? Double,
+                  value.isFinite,
+                  value > 0 else { return nil }
+            return value
+        }
+        set {
+            if let newValue, newValue.isFinite, newValue > 0 {
+                defaults.set(newValue, forKey: Key.sessionDuration)
+            } else {
+                defaults.removeObject(forKey: Key.sessionDuration)
+            }
+        }
+    }
+
+    func timerSession(at now: Date) -> CaffeineTimerSession {
+        if let endDate = sessionEndDate, endDate > now {
+            return .running(endDate: endDate)
+        }
+        if let remaining = pausedSessionRemaining {
+            return .paused(remaining: remaining)
+        }
+        return .inactive
+    }
+
+    func startTimer(duration: TimeInterval, at now: Date) {
+        let normalizedDuration = max(1, duration)
+        pausedSessionRemaining = nil
+        sessionDuration = normalizedDuration
+        sessionEndDate = now.addingTimeInterval(normalizedDuration)
+    }
+
+    @discardableResult
+    func pauseTimer(at now: Date) -> Bool {
+        guard let endDate = sessionEndDate, endDate > now else { return false }
+        pausedSessionRemaining = endDate.timeIntervalSince(now)
+        sessionEndDate = nil
+        return true
+    }
+
+    @discardableResult
+    func resumeTimer(at now: Date) -> Bool {
+        guard let remaining = pausedSessionRemaining else { return false }
+        sessionEndDate = now.addingTimeInterval(remaining)
+        pausedSessionRemaining = nil
+        return true
+    }
+
+    func stopTimer() {
+        sessionEndDate = nil
+        pausedSessionRemaining = nil
+        sessionDuration = nil
+    }
+
+    var preferredTimerMinutes: Int {
+        get {
+            let value = defaults.object(forKey: Key.preferredTimerMinutes) as? Int ?? 120
+            return min(10_080, max(1, value))
+        }
+        set { defaults.set(min(10_080, max(1, newValue)), forKey: Key.preferredTimerMinutes) }
+    }
+
+    var hasPersistedSchedule: Bool {
+        defaults.object(forKey: Key.enabled) != nil
+    }
+
     func load() -> CaffeineSchedule {
         let mask = defaults.object(forKey: Key.weekdaysMask) as? Int ?? 0b111_1111
         let weekdays = Set((1...7).filter { mask & (1 << ($0 - 1)) != 0 })
         let recurrence = (defaults.data(forKey: Key.recurrence)).flatMap {
             try? JSONDecoder().decode(CaffeineRecurrence.self, from: $0)
         }
+        let weekdayWindows = (defaults.data(forKey: Key.weekdayWindows)).flatMap {
+            try? JSONDecoder().decode([Int: CaffeineDayWindow].self, from: $0)
+        } ?? [:]
+        let oneTimeWindow = (defaults.data(forKey: Key.oneTimeWindow)).flatMap {
+            try? JSONDecoder().decode(CaffeineOneTimeWindow.self, from: $0)
+        }
         return CaffeineSchedule(
             enabled: defaults.bool(forKey: Key.enabled),
             onMinutes: defaults.object(forKey: Key.onMinutes) as? Int ?? CaffeineSchedule.defaultOnMinutes,
             offMinutes: defaults.object(forKey: Key.offMinutes) as? Int ?? CaffeineSchedule.defaultOffMinutes,
             weekdays: weekdays,
-            recurrence: recurrence
+            recurrence: recurrence,
+            weekdayWindows: weekdayWindows,
+            oneTimeWindow: oneTimeWindow
         )
     }
 
@@ -490,6 +708,18 @@ final class CaffeineScheduleStore {
             defaults.set(data, forKey: Key.recurrence)
         } else {
             defaults.removeObject(forKey: Key.recurrence)
+        }
+        if !schedule.weekdayWindows.isEmpty,
+           let data = try? JSONEncoder().encode(schedule.weekdayWindows) {
+            defaults.set(data, forKey: Key.weekdayWindows)
+        } else {
+            defaults.removeObject(forKey: Key.weekdayWindows)
+        }
+        if let oneTimeWindow = schedule.oneTimeWindow,
+           let data = try? JSONEncoder().encode(oneTimeWindow) {
+            defaults.set(data, forKey: Key.oneTimeWindow)
+        } else {
+            defaults.removeObject(forKey: Key.oneTimeWindow)
         }
         defaults.synchronize()
     }
