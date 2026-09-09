@@ -151,38 +151,58 @@
     .text-link:hover { text-decoration: underline; }
     .meta { margin-top: 22px; font-size: 13px; color: var(--muted); }
     .product-stage { min-height: 520px; position: relative; display: grid; place-items: center; }
-    .hero-shot { position: relative; z-index: 2; display: block; width: min(520px, 100%); height: auto; filter: drop-shadow(0 30px 36px rgba(0,0,0,.2)); }
     .halo { position: absolute; width: 430px; height: 430px; border-radius: 50%; background: #fff; box-shadow: 0 34px 90px rgba(0,0,0,.08); }
-    .control-panel {
-      position: relative;
-      width: min(390px, 100%);
-      padding: 18px;
-      border-radius: 28px;
-      color: #fff;
-      background: rgba(31,31,34,.93);
-      box-shadow: 0 34px 80px rgba(0,0,0,.28);
-      backdrop-filter: blur(28px);
-      transform: rotate(1.5deg);
-    }
-    .panel-top { display: flex; justify-content: space-between; align-items: center; margin: 1px 5px 15px; color: rgba(255,255,255,.58); font-size: 12px; }
-    .panel-dots { display: flex; gap: 5px; }
-    .panel-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.28); }
-    .cc-card { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 13px; padding: 16px; border-radius: 19px; background: rgba(255,255,255,.11); }
-    .cup-disc { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--blue); }
-    .cup { width: 29px; height: 29px; }
-    .cc-title { font-size: 16px; font-weight: 600; letter-spacing: -.2px; }
-    .cc-state { margin-top: 2px; font-size: 12px; color: rgba(255,255,255,.58); }
-    .switch { width: 48px; height: 28px; padding: 2px; border: 0; border-radius: 999px; background: var(--green); cursor: pointer; transition: background .25s ease; }
-    .switch-knob { display: block; width: 24px; height: 24px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.35); transform: translateX(20px); transition: transform .25s ease; }
-    .control-panel.off .cup-disc { background: rgba(255,255,255,.13); }
-    .control-panel.off .switch { background: rgba(255,255,255,.2); }
-    .control-panel.off .switch-knob { transform: translateX(0); }
-    .control-panel.off .coffee-fill { opacity: 0; }
-    .job-strip { position: absolute; display: flex; align-items: center; gap: 9px; padding: 10px 13px; border-radius: 999px; background: white; box-shadow: 0 14px 35px rgba(0,0,0,.12); font-size: 12px; font-weight: 600; white-space: nowrap; }
-    .job-strip i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(48,209,88,.12); }
-    .job-one { top: 72px; right: -30px; }
-    .job-two { bottom: 85px; left: -26px; }
-    .job-three { bottom: 26px; right: 8px; }
+    .demo-wrap { position: relative; z-index: 2; width: min(390px, 100%); }
+    .demo-panel { --coffee-fraction: 0; position: relative; width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,.16); border-radius: 21px; color: var(--ink); background: #ececee; box-shadow: 0 26px 48px rgba(0,0,0,.2); transition: height .18s ease; }
+    .demo-panel::before { content: ""; position: absolute; top: -10px; left: 50%; width: 18px; height: 18px; border-top: 1px solid rgba(0,0,0,.16); border-left: 1px solid rgba(0,0,0,.16); background: #ececee; transform: translateX(-50%) rotate(45deg); }
+    .demo-row { position: relative; z-index: 1; min-height: 52px; display: flex; align-items: center; gap: 11px; }
+    .demo-row + .demo-row, .demo-content + .demo-row { border-top: 1px solid rgba(0,0,0,.1); }
+    .demo-icon { width: 20px; height: 20px; flex: 0 0 auto; }
+    .demo-title { flex: 1; font-size: 17px; font-weight: 650; letter-spacing: -.3px; text-align: left; }
+    .demo-toggle { position: relative; width: 52px; height: 30px; flex: 0 0 auto; padding: 0; border: 0; border-radius: 999px; background: #c9a77c; cursor: pointer; transition: background .2s ease; }
+    .demo-toggle::after { content: ""; position: absolute; top: 3px; left: 25px; width: 24px; height: 24px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .2s ease; }
+    .demo-toggle[aria-checked="false"] { background: #c7c7c9; }
+    .demo-toggle[aria-checked="false"]::after { left: 3px; }
+    .demo-toggle.small { width: 42px; height: 24px; }
+    .demo-toggle.small::after { top: 2px; left: 20px; width: 20px; height: 20px; }
+    .demo-toggle.small[aria-checked="false"]::after { left: 2px; }
+    .demo-toggle:focus-visible, .demo-section-button:focus-visible, .demo-timer-button:focus-visible, .demo-mode:focus-visible, .demo-step-button:focus-visible, .demo-field:focus-visible, .demo-day:focus-visible { outline: 3px solid rgba(0,113,227,.42); outline-offset: 2px; }
+    .demo-section-button { width: 100%; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
+    .demo-chevron { width: 10px; height: 10px; border-right: 2px solid #777; border-bottom: 2px solid #777; transform: rotate(45deg); transition: transform .2s ease; }
+    .demo-section-button[aria-expanded="true"] .demo-chevron { transform: rotate(225deg); }
+    .demo-content { overflow: hidden; }
+    .demo-content[hidden] { display: none; }
+    .demo-timer { min-height: 218px; padding: 8px 4px 10px; display: grid; place-items: center; text-align: center; }
+    .demo-timer[hidden] { display: none; }
+    .demo-cup { display: block; width: 76px; height: 67px; margin: 0 auto 8px; overflow: visible; }
+    .demo-coffee-shape { transform-box: fill-box; transform-origin: center bottom; transform: scaleY(var(--coffee-fraction)); transition: transform .35s linear; }
+    .demo-time { color: #6a4a33; font-size: 20px; font-weight: 700; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
+    .demo-timer-state { margin-top: 4px; color: #9a8b82; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+    .demo-timer-button { min-height: 30px; margin-top: 10px; padding: 0 14px; border: 0; border-radius: 8px; color: #242426; background: #d7d7d9; font: inherit; font-size: 14px; cursor: pointer; }
+    .demo-timer-button.primary { color: #6f4e37; background: #fff9ee; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+    .demo-timer-button:disabled { opacity: .45; cursor: default; }
+    .demo-empty-label { margin: 2px 0 10px; color: rgba(111,78,55,.72); font-size: 13px; font-weight: 600; }
+    .demo-duration { display: flex; justify-content: center; gap: 10px; }
+    .demo-stepper { height: 30px; display: grid; grid-template-columns: 30px 54px 30px; align-items: center; overflow: hidden; border: 1px solid #c8c8ca; border-radius: 7px; background: #f7f7f8; }
+    .demo-step-button { height: 100%; padding: 0; border: 0; color: #4d4d50; background: transparent; font-size: 18px; cursor: pointer; }
+    .demo-step-value { font-size: 12px; font-variant-numeric: tabular-nums; }
+    .demo-schedule { max-height: 315px; padding: 8px 4px 4px; overflow-y: auto; }
+    .demo-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; padding: 2px; border-radius: 8px; background: #d7d7d9; }
+    .demo-mode { min-height: 26px; padding: 0 5px; border: 0; border-radius: 6px; color: #424245; background: transparent; font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
+    .demo-mode + .demo-mode { border-left: 1px solid #bebec0; border-radius: 0; }
+    .demo-mode[aria-selected="true"] { color: #1d1d1f; background: #f8f8f9; border-left-color: transparent; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.13); }
+    .demo-schedule-editor { padding: 12px 2px 2px; }
+    .demo-schedule-editor[hidden], .demo-mode-editor[hidden] { display: none; }
+    .demo-setting-row { min-height: 34px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 13px; }
+    .demo-field-row { min-height: 38px; display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 13px; }
+    .demo-field-row label { width: 42px; text-align: right; }
+    .demo-field { max-width: 220px; min-height: 27px; padding: 2px 7px; border: 1px solid #c8c8ca; border-radius: 6px; color: #242426; background: #fafafa; font: inherit; font-size: 12px; }
+    .demo-days { display: flex; justify-content: center; gap: 7px; margin: 4px 0 9px; }
+    .demo-day { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; color: #242426; background: rgba(0,0,0,.1); font: inherit; font-size: 12px; cursor: pointer; }
+    .demo-day[aria-pressed="true"] { color: white; background: #6f4e37; }
+    .demo-custom-windows { display: grid; gap: 8px; }
+    .demo-custom-day { padding-top: 5px; border-top: 1px solid rgba(0,0,0,.08); }
+    .demo-custom-day strong { display: block; margin: 0 0 2px 47px; font-size: 12px; }
     .dark { background: #000; color: white; padding: 128px 24px; }
     .section { max-width: var(--max); margin: 0 auto; }
     .section-kicker { margin: 0 0 14px; color: #86868b; font-size: 17px; font-weight: 600; }
@@ -204,6 +224,11 @@
     .ui-card img { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 24px rgba(0,0,0,.24)); }
     .ui-card figcaption { margin-top: 18px; color: #f5f5f7; font-size: 16px; font-weight: 600; }
     .ui-card figcaption span { display: block; margin-top: 5px; color: #86868b; font-size: 14px; font-weight: 400; line-height: 1.45; }
+    .menu-bar-gallery { margin-top: 58px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+    .menu-bar-card { margin: 0; padding: 28px; border: 1px solid #2c2c2e; border-radius: 22px; background: #111; }
+    .menu-bar-card img { display: block; width: min(340px, 100%); height: auto; margin: 0 auto; border-radius: 8px; }
+    .menu-bar-card figcaption { margin-top: 18px; color: #f5f5f7; font-size: 18px; font-weight: 600; }
+    .menu-bar-card figcaption span { display: block; margin-top: 5px; color: #86868b; font-size: 14px; font-weight: 400; line-height: 1.45; }
     .download-note { margin-top: 14px; color: var(--muted); font-size: 13px; }
     .light-section { padding: 130px 24px; background: white; }
     .steps { margin-top: 74px; border-top: 1px solid var(--line); }
@@ -235,6 +260,7 @@
     .final { padding: 130px 24px; background: #000; color: #fff; text-align: center; }
     .final h2 { margin: 0 auto; max-width: 850px; font-size: clamp(48px, 6vw, 76px); line-height: 1; letter-spacing: -3.6px; }
     .final p { margin: 24px auto 0; max-width: 590px; color: #a1a1a6; font-size: 20px; line-height: 1.45; }
+    .final .download-note { margin-top: 16px; color: #86868b; font-size: 12px; }
     .final .actions { justify-content: center; }
     footer { background: #000; color: #86868b; padding: 30px 24px 42px; font-size: 12px; }
     .footer-inner { max-width: var(--max); margin: 0 auto; padding-top: 20px; border-top: 1px solid #333336; display: flex; justify-content: space-between; gap: 24px; }
@@ -250,6 +276,7 @@
       .schedule-showcase { grid-template-columns: 1fr; padding: 30px; gap: 36px; text-align: left; }
       .schedule-showcase img { max-width: 440px; margin: 0 auto; }
       .state-story { grid-template-columns: 1fr; }
+      .menu-bar-gallery { grid-template-columns: 1fr; }
       .ui-gallery { grid-template-columns: 1fr; }
       .step { grid-template-columns: 64px 1fr; }
       .step p { grid-column: 2; }
@@ -263,12 +290,13 @@
       .hero-grid { width: calc(100vw - 36px); max-width: calc(100vw - 36px); }
       .hero-grid h1, .hero-copy { max-width: 100%; }
       .product-stage { min-height: 390px; min-width: 0; width: 100%; }
-      .hero-shot { max-width: 100%; }
+      .product-stage:has(#demo-timer-toggle[aria-expanded="true"]) { min-height: 500px; }
+      .product-stage:has(#demo-schedule-toggle[aria-expanded="true"]) { min-height: 540px; }
       .halo { width: 330px; height: 330px; }
-      .control-panel { width: 315px; }
-      .job-one { right: -8px; top: 38px; }
-      .job-two { left: -6px; bottom: 44px; }
-      .job-three { display: none; }
+      .demo-wrap { width: min(410px, 100%); }
+      .demo-panel { padding: 12px; }
+      .demo-days { gap: 4px; }
+      .demo-field { max-width: 205px; }
       .dark, .light-section, .safety, .faq, .final { padding-left: 20px; padding-right: 20px; }
       .state { min-height: 260px; padding: 28px; }
       .step { grid-template-columns: 38px 1fr; gap: 14px; }
@@ -313,11 +341,76 @@
           <p class="meta">Free · Open source · macOS 26+ · Apple Silicon</p>
           <p class="download-note">No Xcode or Terminal needed. Download, unzip, and drag to Applications.</p>
           <p class="download-note">First launch: Control-click the app and choose Open. If macOS still blocks it, use System Settings → Privacy &amp; Security → Open Anyway.</p>
+          <p class="download-note">Apple Development-signed · Not notarized</p>
         </div>
 
-        <div class="product-stage" aria-label="Caffeine Toggle coffee-cup Timer">
+        <div class="product-stage">
           <div class="halo" aria-hidden="true"></div>
-          <img class="hero-shot" src="assets/ui/timer-full.png" alt="Caffeine Toggle with its latte-brown switch and full coffee-cup Timer" width="772" height="764">
+          <div class="demo-wrap">
+            <section class="demo-panel" id="caffeine-demo" aria-label="Interactive Caffeine Toggle preview">
+              <div class="demo-row">
+                <svg class="demo-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 6.5h11v8.2c0 2.6-1.8 4.3-4.3 4.3H8.8c-2.5 0-4.3-1.7-4.3-4.3V6.5Z" fill="currentColor"/><path d="M15.5 9h1.2c3.7 0 3.7 5.6 0 5.6h-1.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span class="demo-title" id="demo-caffeine-label">Caffeinated</span>
+                <button class="demo-toggle" id="demo-caffeine-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn Caffeine off"></button>
+              </div>
+
+              <button class="demo-row demo-section-button" id="demo-timer-toggle" type="button" aria-expanded="false" aria-controls="demo-timer-content">
+                <svg class="demo-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 13V8m-3-5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span class="demo-title">Timer</span><span class="demo-chevron" aria-hidden="true"></span>
+              </button>
+              <div class="demo-content" id="demo-timer-content" hidden>
+                <div class="demo-timer" id="demo-timer-idle">
+                  <div>
+                    <svg class="demo-cup" viewBox="0 0 76 67" aria-hidden="true"><path d="M57 26h4c16 0 16 24 0 24h-5" fill="none" stroke="#fff9ee" stroke-width="6" stroke-linecap="round"/><path class="demo-coffee-shape" d="M12 8h49l-5 38q-2 14-15 14H32q-13 0-15-14Z" fill="#60401f"/><path d="M12 8h49l-5 38q-2 14-15 14H32q-13 0-15-14Z" fill="none" stroke="#fff9ee" stroke-width="6" stroke-linejoin="round"/></svg>
+                    <p class="demo-empty-label">No timer running</p>
+                    <div class="demo-duration" aria-label="Timer duration">
+                      <div class="demo-stepper"><button class="demo-step-button" type="button" data-step="hours" data-delta="-1" aria-label="Decrease hours">−</button><span class="demo-step-value" id="demo-hours">2 hr</span><button class="demo-step-button" type="button" data-step="hours" data-delta="1" aria-label="Increase hours">+</button></div>
+                      <div class="demo-stepper"><button class="demo-step-button" type="button" data-step="minutes" data-delta="-1" aria-label="Decrease minutes">−</button><span class="demo-step-value" id="demo-minutes">0 min</span><button class="demo-step-button" type="button" data-step="minutes" data-delta="1" aria-label="Increase minutes">+</button></div>
+                    </div>
+                    <button class="demo-timer-button primary" id="demo-start-timer" type="button">Start Timer</button>
+                  </div>
+                </div>
+                <div class="demo-timer" id="demo-timer-active" hidden>
+                  <div>
+                    <svg class="demo-cup" viewBox="0 0 76 67" aria-hidden="true"><path d="M57 26h4c16 0 16 24 0 24h-5" fill="none" stroke="#fff9ee" stroke-width="6" stroke-linecap="round"/><path class="demo-coffee-shape" d="M12 8h49l-5 38q-2 14-15 14H32q-13 0-15-14Z" fill="#60401f"/><path d="M12 8h49l-5 38q-2 14-15 14H32q-13 0-15-14Z" fill="none" stroke="#fff9ee" stroke-width="6" stroke-linejoin="round"/></svg>
+                    <div class="demo-time" id="demo-time">2:00:00</div>
+                    <div class="demo-timer-state">Remaining</div>
+                    <button class="demo-timer-button" id="demo-stop-timer" type="button">Stop</button>
+                  </div>
+                </div>
+              </div>
+
+              <button class="demo-row demo-section-button" id="demo-schedule-toggle" type="button" aria-expanded="false" aria-controls="demo-schedule-content">
+                <svg class="demo-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 3v4m10-4v4M4 9h16" stroke="currentColor" stroke-width="2"/><path d="M7 12h2m2 0h2m2 0h2M7 16h2m2 0h2m2 0h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <span class="demo-title">Schedule</span><span class="demo-chevron" aria-hidden="true"></span>
+              </button>
+              <div class="demo-content demo-schedule" id="demo-schedule-content" hidden>
+                <div class="demo-modes" role="tablist" aria-label="Schedule mode preview">
+                  <button class="demo-mode" type="button" role="tab" aria-selected="false" data-mode="one-time">One Time</button>
+                  <button class="demo-mode" type="button" role="tab" aria-selected="false" data-mode="every-day">Every Day</button>
+                  <button class="demo-mode" type="button" role="tab" aria-selected="false" data-mode="weekdays">Weekdays</button>
+                  <button class="demo-mode" type="button" role="tab" aria-selected="false" data-mode="custom">Custom</button>
+                </div>
+                <div class="demo-schedule-editor" id="demo-schedule-editor" hidden>
+                  <div class="demo-setting-row"><span>Schedule enabled</span><button class="demo-toggle small" id="demo-schedule-enabled" type="button" role="switch" aria-checked="false" aria-label="Enable schedule"></button></div>
+                  <div class="demo-mode-editor" data-editor="one-time" hidden>
+                    <div class="demo-field-row"><label for="demo-once-start">Start</label><input class="demo-field" id="demo-once-start" type="datetime-local"></div>
+                    <div class="demo-field-row"><label for="demo-once-stop">Stop</label><input class="demo-field" id="demo-once-stop" type="datetime-local"></div>
+                  </div>
+                  <div class="demo-mode-editor" data-editor="recurring" hidden>
+                    <div class="demo-field-row"><label for="demo-shared-start">Start</label><input class="demo-field" id="demo-shared-start" type="time" value="09:00"></div>
+                    <div class="demo-field-row"><label for="demo-shared-stop">Stop</label><input class="demo-field" id="demo-shared-stop" type="time" value="17:00"></div>
+                  </div>
+                  <div class="demo-mode-editor" data-editor="custom" hidden>
+                    <div class="demo-days" aria-label="Custom schedule weekdays">
+                      <button class="demo-day" type="button" aria-label="Sunday, not selected" aria-pressed="false" data-day="Sunday">S</button><button class="demo-day" type="button" aria-label="Monday, not selected" aria-pressed="false" data-day="Monday">M</button><button class="demo-day" type="button" aria-label="Tuesday, not selected" aria-pressed="false" data-day="Tuesday">T</button><button class="demo-day" type="button" aria-label="Wednesday, not selected" aria-pressed="false" data-day="Wednesday">W</button><button class="demo-day" type="button" aria-label="Thursday, not selected" aria-pressed="false" data-day="Thursday">T</button><button class="demo-day" type="button" aria-label="Friday, not selected" aria-pressed="false" data-day="Friday">F</button><button class="demo-day" type="button" aria-label="Saturday, not selected" aria-pressed="false" data-day="Saturday">S</button>
+                    </div>
+                    <div class="demo-custom-windows" id="demo-custom-windows"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </section>
@@ -326,7 +419,11 @@
       <div class="section">
         <p class="section-kicker">One switch. Two honest states. Your schedule.</p>
         <h2>Full mug, awake Mac. Empty mug, normal sleep.</h2>
-        <p class="section-lead">Left-click the menu-bar mug for instant control. Right-click it for the attached Timer and Schedule panel.</p>
+        <p class="section-lead">The mug sits directly in the menu bar beside your system controls. Left-click it for instant control; right-click it for the attached Timer and Schedule panel.</p>
+        <div class="menu-bar-gallery" aria-label="Caffeine Toggle menu-bar states">
+          <figure class="menu-bar-card"><img src="assets/ui/menu-bar-on.png" alt="Filled Caffeine Toggle mug in the macOS menu bar beside system controls" width="340" height="66" loading="lazy"><figcaption>Caffeine on<span>The filled mug means the Mac is being kept awake.</span></figcaption></figure>
+          <figure class="menu-bar-card"><img src="assets/ui/menu-bar-off.png" alt="Empty Caffeine Toggle mug in the macOS menu bar beside system controls" width="340" height="66" loading="lazy"><figcaption>Caffeine off<span>The empty mug means normal sleep behavior is restored.</span></figcaption></figure>
+        </div>
         <div class="ui-gallery">
           <figure class="ui-card"><img src="assets/ui/timer-full.png" alt="Running coffee-cup Timer" width="772" height="764" loading="lazy"><figcaption>A Timer you can see<span>Every duration begins full, drains proportionally, and reaches completely empty at zero.</span></figcaption></figure>
           <figure class="ui-card"><img src="assets/ui/timer-paused.png" alt="Paused coffee-cup Timer" width="772" height="764" loading="lazy"><figcaption>Pause without losing time<span>Turning Caffeine off freezes both the countdown and coffee level; turning it on resumes.</span></figcaption></figure>
@@ -387,7 +484,7 @@
         <details><summary>Can I set a Timer for the next two hours?</summary><p>Yes. Open Timer, enter 2 hours, and press Start Timer. The cup begins full, drains with the countdown, and empties when Caffeine turns off at zero.</p></details>
         <details><summary>Can I choose specific days and times?</summary><p>Yes. Choose One Time, Every Day, Weekdays, or Custom. Custom supports any combination of Sunday through Saturday with an independent start and stop window for each selected day.</p></details>
         <details><summary>How is this different from Amphetamine?</summary><p>Caffeine Toggle stays intentionally focused: one native menu-bar mug, an immediately understandable Timer, and straightforward schedules. Amphetamine remains the better fit for advanced triggers and extensive configuration.</p></details>
-        <details><summary>How do I install it?</summary><p>Download the ZIP, open it, and drag Caffeine Toggle into Applications. On the first launch, Control-click the app and choose Open. If macOS still blocks it, use System Settings → Privacy &amp; Security → Open Anyway. Version 3.0 is signed but not yet notarized.</p></details>
+        <details><summary>How do I install it?</summary><p>Download the ZIP, open it, and drag Caffeine Toggle into Applications. On the first launch, Control-click the app and choose Open. If macOS still blocks it, use System Settings → Privacy &amp; Security → Open Anyway. Version 3.0 is signed with an Apple Development certificate but is not yet notarized.</p></details>
       </div>
     </section>
 
@@ -395,6 +492,7 @@
       <h2>Let the Mac close.<br>Let the task finish.</h2>
       <p>Free, open source, and built for the long-running work that shouldn’t stop when your screen does.</p>
       <div class="actions"><a class="button" href="https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.zip">Download Caffeine Toggle 3.0</a></div>
+      <p class="download-note">Apple Development-signed · Not notarized · First launch may require Control-click → Open</p>
     </section>
   </main>
 
@@ -404,6 +502,172 @@
       <div class="footer-links"><a href="keep-mac-awake-lid-closed/">Guides</a><a href="https://github.com/kimiyashar/caffeine-toggle">Source</a><a href="https://github.com/kimiyashar/caffeine-toggle/issues">Issues</a><a href="https://github.com/kimiyashar/caffeine-toggle/blob/main/LICENSE">MIT License</a></div>
     </div>
   </footer>
+
+  <script>
+    (() => {
+      const panel = document.querySelector('#caffeine-demo');
+      if (!panel) return;
+
+      const caffeineToggle = panel.querySelector('#demo-caffeine-toggle');
+      const caffeineLabel = panel.querySelector('#demo-caffeine-label');
+      const timerToggle = panel.querySelector('#demo-timer-toggle');
+      const timerContent = panel.querySelector('#demo-timer-content');
+      const timerIdle = panel.querySelector('#demo-timer-idle');
+      const timerActive = panel.querySelector('#demo-timer-active');
+      const startTimer = panel.querySelector('#demo-start-timer');
+      const stopTimer = panel.querySelector('#demo-stop-timer');
+      const timeLabel = panel.querySelector('#demo-time');
+      const hoursLabel = panel.querySelector('#demo-hours');
+      const minutesLabel = panel.querySelector('#demo-minutes');
+      const scheduleToggle = panel.querySelector('#demo-schedule-toggle');
+      const scheduleContent = panel.querySelector('#demo-schedule-content');
+      const scheduleEditor = panel.querySelector('#demo-schedule-editor');
+      const scheduleEnabled = panel.querySelector('#demo-schedule-enabled');
+      const modes = [...panel.querySelectorAll('.demo-mode')];
+      const modeEditors = [...panel.querySelectorAll('.demo-mode-editor')];
+      const dayButtons = [...panel.querySelectorAll('.demo-day')];
+      const customWindows = panel.querySelector('#demo-custom-windows');
+      const customValues = {};
+      let timerHours = 2;
+      let timerMinutes = 0;
+      let duration = 0;
+      let remaining = 0;
+      let active = false;
+      let caffeinated = true;
+
+      const formatTime = seconds => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor(seconds % 3600 / 60);
+        const tail = String(seconds % 60).padStart(2, '0');
+        return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${tail}` : `${minutes}:${tail}`;
+      };
+
+      const render = () => {
+        caffeineLabel.textContent = caffeinated ? 'Caffeinated' : 'Decaffeinated';
+        caffeineToggle.setAttribute('aria-checked', String(caffeinated));
+        caffeineToggle.setAttribute('aria-label', caffeinated ? 'Turn Caffeine off' : 'Turn Caffeine on');
+        timerIdle.hidden = active;
+        timerActive.hidden = !active;
+        hoursLabel.textContent = `${timerHours} hr`;
+        minutesLabel.textContent = `${timerMinutes} min`;
+        startTimer.disabled = timerHours === 0 && timerMinutes === 0;
+        timeLabel.textContent = formatTime(remaining);
+        panel.style.setProperty('--coffee-fraction', active ? Math.max(0, Math.min(1, remaining / duration)) : 0);
+      };
+
+      const setSection = (button, content, otherButton, otherContent) => {
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
+        if (!expanded) {
+          otherButton.setAttribute('aria-expanded', 'false');
+          otherContent.hidden = true;
+        }
+      };
+
+      caffeineToggle.addEventListener('click', () => {
+        caffeinated = !caffeinated;
+        render();
+      });
+
+      panel.querySelectorAll('.demo-step-button').forEach(button => button.addEventListener('click', () => {
+        const delta = Number(button.dataset.delta);
+        if (button.dataset.step === 'hours') {
+          timerHours = Math.max(0, Math.min(168, timerHours + delta));
+          if (timerHours === 168) timerMinutes = 0;
+        } else {
+          timerMinutes = Math.max(0, Math.min(timerHours === 168 ? 0 : 59, timerMinutes + delta));
+        }
+        render();
+      }));
+
+      startTimer.addEventListener('click', () => {
+        duration = Math.max(60, Math.min(604800, (timerHours * 60 + timerMinutes) * 60));
+        remaining = duration;
+        active = true;
+        caffeinated = true;
+        render();
+      });
+
+      stopTimer.addEventListener('click', () => {
+        active = false;
+        remaining = 0;
+        render();
+      });
+
+      timerToggle.addEventListener('click', () => setSection(timerToggle, timerContent, scheduleToggle, scheduleContent));
+      scheduleToggle.addEventListener('click', () => {
+        const wasExpanded = scheduleToggle.getAttribute('aria-expanded') === 'true';
+        setSection(scheduleToggle, scheduleContent, timerToggle, timerContent);
+        if (!wasExpanded) {
+          modes.forEach(item => item.setAttribute('aria-selected', 'false'));
+          scheduleEditor.hidden = true;
+        }
+      });
+
+      modes.forEach(mode => mode.addEventListener('click', () => {
+        modes.forEach(item => item.setAttribute('aria-selected', String(item === mode)));
+        scheduleEditor.hidden = false;
+        modeEditors.forEach(editor => {
+          const target = mode.dataset.mode === 'one-time' ? 'one-time' : mode.dataset.mode === 'custom' ? 'custom' : 'recurring';
+          editor.hidden = editor.dataset.editor !== target;
+        });
+      }));
+
+      scheduleEnabled.addEventListener('click', () => {
+        const enabled = scheduleEnabled.getAttribute('aria-checked') !== 'true';
+        scheduleEnabled.setAttribute('aria-checked', String(enabled));
+        scheduleEnabled.setAttribute('aria-label', enabled ? 'Disable schedule' : 'Enable schedule');
+      });
+
+      const customRow = day => {
+        const safe = day.toLowerCase();
+        const values = customValues[day] || { start: '09:00', stop: '17:00' };
+        return `<div class="demo-custom-day" data-window="${day}"><strong>${day.slice(0, 3)}</strong><div class="demo-field-row"><label for="${safe}-start">Start</label><input class="demo-field" id="${safe}-start" data-custom-day="${day}" data-custom-field="start" type="time" value="${values.start}"></div><div class="demo-field-row"><label for="${safe}-stop">Stop</label><input class="demo-field" id="${safe}-stop" data-custom-day="${day}" data-custom-field="stop" type="time" value="${values.stop}"></div></div>`;
+      };
+
+      const renderCustomWindows = () => {
+        customWindows.innerHTML = dayButtons
+          .filter(button => button.getAttribute('aria-pressed') === 'true')
+          .map(button => customRow(button.dataset.day))
+          .join('');
+      };
+
+      dayButtons.forEach(button => button.addEventListener('click', () => {
+        const selected = button.getAttribute('aria-pressed') !== 'true';
+        button.setAttribute('aria-pressed', String(selected));
+        button.setAttribute('aria-label', `${button.dataset.day}, ${selected ? 'selected' : 'not selected'}`);
+        renderCustomWindows();
+      }));
+
+      customWindows.addEventListener('change', event => {
+        const field = event.target.closest('[data-custom-field]');
+        if (!field) return;
+        customValues[field.dataset.customDay] ||= { start: '09:00', stop: '17:00' };
+        customValues[field.dataset.customDay][field.dataset.customField] = field.value;
+      });
+
+      const now = new Date();
+      now.setMinutes(Math.ceil(now.getMinutes() / 5) * 5, 0, 0);
+      const later = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const localDateTime = date => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      panel.querySelector('#demo-once-start').value = localDateTime(now);
+      panel.querySelector('#demo-once-stop').value = localDateTime(later);
+
+      window.setInterval(() => {
+        if (!active || !caffeinated) return;
+        remaining -= 1;
+        if (remaining <= 0) {
+          remaining = 0;
+          active = false;
+          caffeinated = false;
+        }
+        render();
+      }, 1000);
+
+      render();
+    })();
+  </script>
 
 </body>
 </html>

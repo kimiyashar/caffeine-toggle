@@ -760,6 +760,16 @@ enum MenuBarPanelPresenter {
     }
 }
 
+enum MenuBarReopenPolicy {
+    static func shouldPresentPanel(hasPendingShowRequest: Bool) -> Bool {
+        hasPendingShowRequest
+    }
+}
+
+enum MenuBarLaunchPolicy {
+    static let requestsPanelForDuplicateLaunch = false
+}
+
 enum MenuBarStatusItemPresenter {
     static let autosaveName: NSStatusItem.AutosaveName? = nil
     static let behavior: NSStatusItem.Behavior = []

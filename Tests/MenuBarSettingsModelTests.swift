@@ -356,6 +356,18 @@ final class MenuBarSettingsModelTests: XCTestCase {
         XCTAssertTrue(MenuBarStatusItemPresenter.behavior.isEmpty)
     }
 
+    func testPassiveApplicationReopenDoesNotPresentPanel() {
+        XCTAssertFalse(MenuBarReopenPolicy.shouldPresentPanel(hasPendingShowRequest: false))
+    }
+
+    func testExplicitPendingRequestCanPresentPanelOnReopen() {
+        XCTAssertTrue(MenuBarReopenPolicy.shouldPresentPanel(hasPendingShowRequest: true))
+    }
+
+    func testDuplicateLaunchDoesNotRequestPanelPresentation() {
+        XCTAssertFalse(MenuBarLaunchPolicy.requestsPanelForDuplicateLaunch)
+    }
+
     func testReloadSynchronizesAnExternalScheduleChange() {
         let store = CaffeineScheduleStore(defaults: defaults)
         let model = makeModel(store: store)

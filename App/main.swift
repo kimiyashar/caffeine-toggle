@@ -142,8 +142,10 @@ private let instanceLockPath = FileManager.default.homeDirectoryForCurrentUser
     .path
 private let instanceLock = SingleInstanceLock(path: instanceLockPath)
 if instanceLock == nil {
-    SharedState.hasPendingShowRequest = true
-    SharedState.post(SharedState.showSchedule)
+    if MenuBarLaunchPolicy.requestsPanelForDuplicateLaunch {
+        SharedState.hasPendingShowRequest = true
+        SharedState.post(SharedState.showSchedule)
+    }
     exit(0)
 }
 
@@ -230,7 +232,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        guard MenuBarReopenPolicy.shouldPresentPanel(
+            hasPendingShowRequest: SharedState.hasPendingShowRequest
+        ) else { return false }
         menuBarController.showPopover()
+        SharedState.hasPendingShowRequest = false
         return true
     }
 

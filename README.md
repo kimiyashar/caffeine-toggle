@@ -20,7 +20,7 @@ A tiny native macOS menu-bar app that keeps your Mac awake—with a visual Timer
 2. Open the downloaded ZIP, then drag **Caffeine Toggle** into your **Applications** folder.
 3. The first time only, Control-click **Caffeine Toggle** in Applications and choose **Open**, then **Open** again.
 
-If macOS still blocks the app, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Caffeine Toggle. This release is signed but not yet notarized for automatic Gatekeeper approval.
+If macOS still blocks the app, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Caffeine Toggle. This release is signed with an Apple Development certificate but is not yet notarized for automatic Gatekeeper approval.
 
 **Requires an Apple Silicon Mac running macOS 26 or later.**
 
@@ -30,6 +30,14 @@ If macOS still blocks the app, open **System Settings → Privacy & Security**, 
 - **Right-click or two-finger click the mug:** open the attached Timer and Schedule panel.
 - **Filled menu-bar mug:** Caffeine is on; idle sleep is prevented.
 - **Empty menu-bar mug:** Caffeine is off; normal sleep behavior is restored.
+
+### In the menu bar
+
+The mug sits directly beside your other macOS system controls. Caffeine Toggle does not install a separate Control Center extension.
+
+| Caffeine ON | Caffeine OFF |
+|---|---|
+| ![Filled Caffeine Toggle mug in the macOS menu bar](docs/assets/ui/menu-bar-on.png) | ![Empty Caffeine Toggle mug in the macOS menu bar](docs/assets/ui/menu-bar-off.png) |
 
 ### The coffee-cup Timer
 
