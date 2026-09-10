@@ -189,6 +189,40 @@ final class MenuBarSettingsModelTests: XCTestCase {
         XCTAssertEqual(store.load().weekdayWindows[4], CaffeineDayWindow(onMinutes: 14 * 60, offMinutes: 18 * 60))
     }
 
+    func testCustomScheduleMatchingWeekdaysPresetCanBeEnabledAndReloadedAsCustom() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let model = makeModel(store: store)
+        model.selectScheduleMode(.custom)
+        for weekday in 2...6 {
+            model.setCustomDay(weekday, enabled: true)
+        }
+
+        model.setScheduleEnabled(true)
+
+        XCTAssertTrue(model.scheduleIsEnabled(.custom))
+        XCTAssertFalse(model.scheduleIsEnabled(.weekdays))
+        let reloadedModel = makeModel(store: store)
+        XCTAssertEqual(reloadedModel.scheduleMode, .custom)
+        XCTAssertTrue(reloadedModel.scheduleIsEnabled(.custom))
+    }
+
+    func testCustomScheduleMatchingEveryDayPresetCanBeEnabledAndReloadedAsCustom() {
+        let store = CaffeineScheduleStore(defaults: defaults)
+        let model = makeModel(store: store)
+        model.selectScheduleMode(.custom)
+        for weekday in 1...7 {
+            model.setCustomDay(weekday, enabled: true)
+        }
+
+        model.setScheduleEnabled(true)
+
+        XCTAssertTrue(model.scheduleIsEnabled(.custom))
+        XCTAssertFalse(model.scheduleIsEnabled(.everyDay))
+        let reloadedModel = makeModel(store: store)
+        XCTAssertEqual(reloadedModel.scheduleMode, .custom)
+        XCTAssertTrue(reloadedModel.scheduleIsEnabled(.custom))
+    }
+
     func testOneTimeDraftSavesOnlyWhenEnabled() {
         let store = CaffeineScheduleStore(defaults: defaults)
         let model = makeModel(store: store)

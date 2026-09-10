@@ -573,6 +573,7 @@ final class CaffeineScheduleStore {
         static let pausedSessionRemaining = "session.pausedRemaining"
         static let sessionDuration = "session.duration"
         static let preferredTimerMinutes = "timer.preferredMinutes"
+        static let compactScheduleMode = "schedule.compactMode"
     }
 
     private let defaults: UserDefaults
@@ -668,6 +669,17 @@ final class CaffeineScheduleStore {
             return min(10_080, max(1, value))
         }
         set { defaults.set(min(10_080, max(1, newValue)), forKey: Key.preferredTimerMinutes) }
+    }
+
+    var compactScheduleMode: String? {
+        get { defaults.string(forKey: Key.compactScheduleMode) }
+        set {
+            if let newValue {
+                defaults.set(newValue, forKey: Key.compactScheduleMode)
+            } else {
+                defaults.removeObject(forKey: Key.compactScheduleMode)
+            }
+        }
     }
 
     var hasPersistedSchedule: Bool {
