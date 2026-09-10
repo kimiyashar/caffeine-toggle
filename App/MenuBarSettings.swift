@@ -48,7 +48,11 @@ final class MenuBarSettingsModel: ObservableObject {
             hasPersistedSchedule: store.hasPersistedSchedule
         )
         scheduleEnabled = snapshot.enabled
-        scheduleMode = snapshot.mode
+        scheduleMode = Self.resolvedMode(
+            for: store.load(),
+            inferredMode: snapshot.mode,
+            persistedMode: store.compactScheduleMode
+        )
         sharedWindow = snapshot.sharedWindow
         customWindows = snapshot.customWindows
         oneTimeStart = snapshot.oneTimeStart
@@ -128,11 +132,17 @@ final class MenuBarSettingsModel: ObservableObject {
 
     func scheduleIsEnabled(_ mode: CaffeineScheduleMode) -> Bool {
         guard scheduleEnabled, store.hasPersistedSchedule else { return false }
-        return Self.snapshot(
-            for: store.load(),
+        let schedule = store.load()
+        let snapshot = Self.snapshot(
+            for: schedule,
             now: now(),
             hasPersistedSchedule: true
-        ).mode == mode
+        )
+        return Self.resolvedMode(
+            for: schedule,
+            inferredMode: snapshot.mode,
+            persistedMode: store.compactScheduleMode
+        ) == mode
     }
 
     func setSharedWindow(_ window: CaffeineDayWindow) {
@@ -186,13 +196,18 @@ final class MenuBarSettingsModel: ObservableObject {
         timerHours = duration / 60
         timerMinutes = duration % 60
         timerState = store.timerSession(at: now())
+        let schedule = store.load()
         let snapshot = Self.snapshot(
-            for: store.load(),
+            for: schedule,
             now: now(),
             hasPersistedSchedule: store.hasPersistedSchedule
         )
         scheduleEnabled = snapshot.enabled
-        scheduleMode = snapshot.mode
+        scheduleMode = Self.resolvedMode(
+            for: schedule,
+            inferredMode: snapshot.mode,
+            persistedMode: store.compactScheduleMode
+        )
         sharedWindow = snapshot.sharedWindow
         customWindows = snapshot.customWindows
         oneTimeStart = snapshot.oneTimeStart
@@ -200,6 +215,7 @@ final class MenuBarSettingsModel: ObservableObject {
     }
 
     private func saveSelectedSchedule() {
+        store.compactScheduleMode = scheduleMode.rawValue
         switch scheduleMode {
         case .oneTime:
             saveOneTime()
@@ -266,6 +282,27 @@ final class MenuBarSettingsModel: ObservableObject {
             || recurrence.interval != 1
             || recurrence.endDate != nil
             || recurrence.occurrenceLimit != nil
+    }
+
+    private static func resolvedMode(
+        for schedule: CaffeineSchedule,
+        inferredMode: CaffeineScheduleMode,
+        persistedMode: String?
+    ) -> CaffeineScheduleMode {
+        guard let persistedMode,
+              let mode = CaffeineScheduleMode(rawValue: persistedMode)
+        else { return inferredMode }
+
+        switch mode {
+        case .oneTime:
+            return schedule.oneTimeWindow == nil ? inferredMode : .oneTime
+        case .everyDay, .weekdays:
+            return mode == inferredMode ? mode : inferredMode
+        case .custom:
+            return schedule.oneTimeWindow == nil && !schedule.weekdayWindows.isEmpty
+                ? .custom
+                : inferredMode
+        }
     }
 
     private static func snapshot(

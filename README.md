@@ -7,7 +7,7 @@ A tiny native macOS menu-bar app that keeps your Mac awake—with a visual Timer
 </p>
 
 <p align="center">
-  <a href="https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.zip"><strong>⬇ Download Caffeine Toggle 3.0</strong></a>
+  <a href="https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.1.zip"><strong>⬇ Download Caffeine Toggle 3.0.1</strong></a>
   &nbsp;·&nbsp;
   <a href="https://kimiyashar.github.io/caffeine-toggle/">Website</a>
 </p>
@@ -16,13 +16,15 @@ A tiny native macOS menu-bar app that keeps your Mac awake—with a visual Timer
 
 **You do not need Xcode or Terminal.**
 
-1. **[Download Caffeine Toggle 3.0](https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.zip).**
+1. **[Download Caffeine Toggle 3.0.1](https://github.com/kimiyashar/caffeine-toggle/releases/latest/download/Caffeine-Toggle-3.0.1.zip).**
 2. Open the downloaded ZIP, then drag **Caffeine Toggle** into your **Applications** folder.
 3. The first time only, Control-click **Caffeine Toggle** in Applications and choose **Open**, then **Open** again.
 
 If macOS still blocks the app, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Caffeine Toggle. This release is signed with an Apple Development certificate but is not yet notarized for automatic Gatekeeper approval.
 
 **Requires an Apple Silicon Mac running macOS 26 or later.**
+
+**Fixed in 3.0.1:** Custom schedules whose selected days and hours happen to match Weekdays or Every Day now enable normally and remain identified as Custom after reopening the app.
 
 ## Use it
 
