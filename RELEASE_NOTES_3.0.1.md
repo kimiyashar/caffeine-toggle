@@ -15,3 +15,5 @@ This update fixes Custom schedule activation in the compact menu-bar panel.
 3. On first launch, Control-click the app and choose **Open**.
 
 No Xcode or Terminal is required. This build supports Apple Silicon Macs running macOS 26 or later.
+
+This release is signed with an **Apple Development** certificate and is **not notarized**, so Gatekeeper may reject a normal double-click. If Control-click → **Open** is still blocked, open **System Settings → Privacy & Security**, scroll to the security message for Caffeine Toggle, and click **Open Anyway**.
